@@ -19,9 +19,9 @@ export default function AdminPowerPage() {
   const [history, setHistory] = useState<any[]>([])
 
   useEffect(() => {
-    if (!selectedPlatform) return
-    api.get(`/api/services?platform=${selectedPlatform}&limit=50`).then(res => {
-      setServices(res.data)
+    if (!selectedPlatform) return  
+    api.get(`/api/services/admin/all?platform=${selectedPlatform}&limit=50`).then(res => {
+      setServices(res.data.items || [])
       setSelectedService(null)
     })
   }, [selectedPlatform])
@@ -33,7 +33,7 @@ export default function AdminPowerPage() {
   }, [])
 
   const providerCost = selectedService ? calculateCharge(
-    selectedService.cost_per_1k || selectedService.rate_per_1k * 0.7,
+    selectedService.cost_per_1k ?? selectedService.rate_per_1k * 0.7,
     quantity
   ) : 0
 

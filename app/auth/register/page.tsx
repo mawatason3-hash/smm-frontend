@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,7 +7,7 @@ import { useToast } from '@/contexts/ToastContext'
 
 const COUNTRIES = ['Rwanda', 'Liberia', 'Uganda', 'Kenya', 'Tanzania', 'Ghana', 'Nigeria', 'Cameroon', 'Ivory Coast', 'Senegal', 'Zambia', 'Mozambique', 'South Africa', 'United States', 'United Kingdom', 'Other']
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm_password: '', phone: '', country: '', referral_code: '' })
   const [showPass, setShowPass] = useState(false)
   const [agreed, setAgreed] = useState(false)
@@ -135,5 +135,17 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   )
 }

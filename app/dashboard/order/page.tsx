@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,7 +7,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { PLATFORMS, Service } from '@/types'
 import { formatCurrency, calculateCharge, getPlatformIcon, debounce } from '@/lib/utils'
 
-export default function NewOrderPage() {
+function OrderPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { user, refreshUser } = useAuth()
@@ -245,5 +245,17 @@ export default function NewOrderPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewOrderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <OrderPageContent />
+    </Suspense>
   )
 }

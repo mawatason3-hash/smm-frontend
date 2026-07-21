@@ -20,6 +20,8 @@ export interface Service {
   name: string
   description?: string
   rate_per_1k: number
+  cost_per_1k?: number
+  provider?: string
   min_qty: number
   max_qty: number
   avg_speed?: string
