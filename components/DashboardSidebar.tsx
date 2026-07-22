@@ -53,8 +53,8 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
 
         {/* Logo */}
         <div className="p-5 border-b border-[#2D2D50]">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>B</div>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/logo.svg" alt="BOASTLIB" className="w-8 h-8" />
             <div>
               <div className="font-black text-white text-sm leading-none">BOASTLIB</div>
               <div className="text-[10px] text-[#6B7280] mt-0.5">SMM Panel</div>
