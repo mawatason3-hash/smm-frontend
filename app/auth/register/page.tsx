@@ -49,9 +49,8 @@ function RegisterForm() {
 
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>B</div>
-            <span className="font-black text-white text-xl">BOASTLIB</span>
+          <Link href="/" className="inline-flex items-center justify-center">
+            <img src="/logo.png" alt="BOASTLIB" className="h-12 w-12 object-contain" />
           </Link>
         </div>
 

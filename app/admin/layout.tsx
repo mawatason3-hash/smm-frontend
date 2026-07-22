@@ -49,9 +49,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Logo + Admin badge */}
         <div className="p-5 border-b border-[#2D2D50]">
-          <Link href="/" className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>B</div>
-            <span className="font-black text-white">BOASTLIB</span>
+          <Link href="/" className="inline-flex items-center mb-3">
+            <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
           </Link>
           <div className="flex items-center gap-2">
             <div className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white' }}>

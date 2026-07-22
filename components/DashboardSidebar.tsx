@@ -53,12 +53,8 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
 
         {/* Logo */}
         <div className="p-5 border-b border-[#2D2D50]">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.svg" alt="BOASTLIB" className="w-8 h-8" />
-            <div>
-              <div className="font-black text-white text-sm leading-none">BOASTLIB</div>
-              <div className="text-[10px] text-[#6B7280] mt-0.5">SMM Panel</div>
-            </div>
+          <Link href="/" className="flex items-center">
+            <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
           </Link>
         </div>
 
