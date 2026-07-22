@@ -12,6 +12,7 @@ function RegisterForm() {
   const [showPass, setShowPass] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [hasReferral, setHasReferral] = useState(false)
   const { register } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
@@ -109,8 +110,16 @@ function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#9CA3AF] mb-1.5">🎁 Referral Code (optional)</label>
-              <input type="text" value={form.referral_code} onChange={e => update('referral_code', e.target.value.toUpperCase())} className="input" placeholder="Enter referral code" />
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={hasReferral} onChange={e => { setHasReferral(e.target.checked); if (!e.target.checked) update('referral_code', '') }} className="w-4 h-4" />
+                <span className="text-sm text-[#9CA3AF]">I have a referral code (optional)</span>
+              </label>
+              {hasReferral && (
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-[#9CA3AF] mb-1.5">🎁 Referral Code</label>
+                  <input type="text" value={form.referral_code} onChange={e => update('referral_code', e.target.value.toUpperCase())} className="input" placeholder="Enter referral code" />
+                </div>
+              )}
             </div>
 
             <label className="flex items-start gap-3 cursor-pointer">
