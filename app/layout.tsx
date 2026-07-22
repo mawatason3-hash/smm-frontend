@@ -5,7 +5,23 @@ import { ToastProvider } from '@/contexts/ToastContext'
 
 export const metadata: Metadata = {
   title: 'BOASTLIB — Cheapest SMM Panel',
-  description: 'Boost your social media instantly. Cheapest SMM panel with real-time delivery. Instagram, TikTok, YouTube, Facebook and more.',
+  description: 'Boastlib.space is the cheapest SMM panel for Instagram, TikTok, YouTube, Facebook and more. Fast delivery, low prices, and trusted service.',
+  metadataBase: new URL('https://boastlib.space'),
+  openGraph: {
+    title: 'BOASTLIB — Cheapest SMM Panel',
+    description: 'Boastlib.space is the cheapest SMM panel for Instagram, TikTok, YouTube, Facebook and more. Fast delivery, low prices, and trusted service.',
+    url: 'https://boastlib.space',
+    siteName: 'BOASTLIB',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
   icons: { icon: '/favicon.ico' },
 }
 
