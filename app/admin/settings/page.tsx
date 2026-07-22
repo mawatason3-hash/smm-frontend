@@ -79,6 +79,37 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
+      {/* Liberia Mobile Money */}
+      <div className="card">
+        <h2 className="text-white font-bold mb-4">🇱🇷 Liberia Mobile Money Numbers</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">MTN Lonestar Number</label>
+            <input value={settings.liberia_mtn_number || ''} onChange={e => update('liberia_mtn_number', e.target.value)} className="input" placeholder="e.g., 0555166954" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">Orange Money Number</label>
+            <input value={settings.liberia_orange_number || ''} onChange={e => update('liberia_orange_number', e.target.value)} className="input" placeholder="e.g., 0770 XXX XXX" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">WhatsApp Support Number</label>
+            <input value={settings.whatsapp_support || ''} onChange={e => update('whatsapp_support', e.target.value)} className="input" placeholder="e.g., +250792405593" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">Telegram Support Link</label>
+            <input value={settings.telegram_support || ''} onChange={e => update('telegram_support', e.target.value)} className="input" placeholder="e.g., https://t.me/boastlib_support" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">Manual Payment Instructions</label>
+            <textarea value={settings.manual_payment_instructions || ''} onChange={e => update('manual_payment_instructions', e.target.value)} className="input h-24 resize-none" placeholder="Instructions shown to users..." />
+          </div>
+          <div>
+            <label className="block text-sm text-[#9CA3AF] mb-1.5">Manual Payment Processing Time</label>
+            <input value={settings.manual_payment_time || ''} onChange={e => update('manual_payment_time', e.target.value)} className="input" placeholder="e.g., 1-2 hours" />
+          </div>
+        </div>
+      </div>
+
       {/* Toggles */}
       <div className="card">
         <h2 className="text-white font-bold mb-4">Platform Controls</h2>

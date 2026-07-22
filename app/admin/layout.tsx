@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { href: '/admin/orders', label: 'Orders', icon: '📦' },
   { href: '/admin/services', label: 'Services', icon: '🛠️' },
   { href: '/admin/transactions', label: 'Transactions', icon: '💰' },
+  { href: '/admin/manual-payments', label: 'Manual Payments', icon: '🇱🇷' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
   { href: '/admin/activity-log', label: 'Activity Log', icon: '📋' },
 ]
