@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency } from '@/lib/utils'
+import PWAInstallButton from './PWAInstallButton'
 
 const USER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -66,7 +67,11 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
             </div>
             <div className="min-w-0">
               <div className="text-white text-sm font-semibold truncate">{user?.full_name}</div>
-              <div className="text-green-400 text-xs font-bold">{formatCurrency(user?.balance || 0)}</div>
+              {isAdmin ? (
+                <div className="text-amber-400 text-xs font-bold">🌐 Platform Owner</div>
+              ) : (
+                <div className="text-green-400 text-xs font-bold">{formatCurrency(user?.balance || 0)}</div>
+              )}
             </div>
           </div>
         </div>
@@ -92,8 +97,8 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Logout */}
         <div className="p-3 border-t border-[#2D2D50]">
+          <PWAInstallButton />
           <button onClick={logout} className="sidebar-link w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/10">
             <span className="text-base w-5 text-center">🚪</span>
             <span>Logout</span>

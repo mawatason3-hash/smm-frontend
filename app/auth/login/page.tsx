@@ -19,8 +19,9 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
+      // AuthContext handles redirect based on role
+      // This is a fallback in case it doesn't work
       showToast('Welcome back! 👋', 'success')
-      router.push('/dashboard')
     } catch (err: any) {
       showToast(err?.response?.data?.detail || 'Invalid credentials', 'error')
     } finally {

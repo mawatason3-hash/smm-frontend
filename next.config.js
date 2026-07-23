@@ -1,4 +1,24 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/boastlib\.space\/.*$/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'boastlib-cache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 24 * 60 * 60,
+        },
+      },
+    },
+  ],
+})
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -21,4 +41,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withPWA(nextConfig)

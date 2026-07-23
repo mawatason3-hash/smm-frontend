@@ -1,0 +1,49 @@
+
+> boastlib-frontend@1.0.0 build
+> next build
+
+  Γû▓ Next.js 14.2.5
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next-pwa\register.js
+> [PWA] Service worker: C:\Users\ggggg\Downloads\boastlib-complete\frontend\public\sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+unhandledRejection Error: Cannot find module 'C:\Users\ggggg\Downloads\boastlib-complete\frontend\.next\server\pages\_document.js'
+Require stack:
+- C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\require.js
+- C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\load-components.js
+- C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\build\utils.js
+- C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\build\worker.js
+- C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+    at C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\require-hook.js:55:36
+    at Module._load (node:internal/modules/cjs/loader:1038:27)
+    at Module.require (node:internal/modules/cjs/loader:1289:19)
+    at mod.require (C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:182:18)
+    at requirePage (C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\server\load-components.js:72:65
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.all (index 0) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 12.0.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.1
+npm notice To update run: npm install -g npm@12.0.1
+npm notice

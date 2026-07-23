@@ -49,7 +49,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await api.post('/api/auth/login', { email, password })
     localStorage.setItem('access_token', res.data.access_token)
     localStorage.setItem('refresh_token', res.data.refresh_token)
-    await fetchUser()
+
+    // Fetch user data and check role
+    const userRes = await api.get('/api/auth/me')
+    const userData = userRes.data
+    setUser(userData)
+
+    if (userData.role !== 'super_admin' && userData.role !== 'admin') {
+      const alreadySeen = localStorage.getItem('install_prompt_shown') === 'true'
+      const nav = window.navigator as any
+      const installed = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true
+      if (!alreadySeen && !installed) {
+        localStorage.setItem('install_prompt_pending', 'true')
+      }
+    }
+
+    // Redirect based on role
+    if (userData.role === 'super_admin' || userData.role === 'admin') {
+      window.location.href = '/admin'
+    } else {
+      window.location.href = '/dashboard'
+    }
   }
 
   const register = async (data: RegisterData) => {

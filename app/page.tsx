@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import PWAInstallButton from '@/components/PWAInstallButton'
 import { PLATFORMS } from '@/types'
 
 const LIVE_COUNT_START = 522
@@ -39,17 +40,16 @@ export default function LandingPage() {
             {[
               { label: 'Home', href: '/' },
               { label: 'Services', href: '/services' },
+              { label: 'Pricing', href: '/services' },
               { label: 'Blog', href: '/blog' },
-              { label: 'Instagram Followers', href: '/instagram-followers' },
-              { label: 'TikTok Likes', href: '/tiktok-likes' },
-              { label: 'YouTube Views', href: '/youtube-views' },
             ].map(item => (
               <Link key={item.label} href={item.href} className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors">{item.label}</Link>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/auth/login" className="hidden sm:block text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors px-4 py-2 rounded-lg border border-[#2D2D50] hover:border-[#3B82F6]">Login</Link>
+          <div className="hidden md:flex items-center gap-3">
+            <PWAInstallButton variant="nav" />
+            <Link href="/auth/login" className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors px-4 py-2 rounded-lg border border-[#2D2D50] hover:border-[#3B82F6]">Login</Link>
             <Link href="/auth/register" className="btn-primary text-sm px-5 py-2.5">Get Started</Link>
           </div>
         </div>

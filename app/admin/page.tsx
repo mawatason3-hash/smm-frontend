@@ -1,53 +1,49 @@
 'use client'
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import api from '@/lib/api'
-import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
+import { useEffect, useState, Fragment } from 'react'
 import Link from 'next/link'
-
-const QUICK_ACTIONS = [
-  { label: 'Manage Users', href: '/admin/users', icon: '👥' },
-  { label: 'View Orders', href: '/admin/orders', icon: '📦' },
-  { label: 'Services', href: '/admin/services', icon: '🛠️' },
-  { label: 'Settings', href: '/admin/settings', icon: '⚙️' },
-]
+import api from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { formatCurrency, formatNumber, formatDateTime } from '@/lib/utils'
 
 export default function AdminDashboardPage() {
+  const { user } = useAuth()
   const [stats, setStats] = useState<any>(null)
   const [pendingPayments, setPendingPayments] = useState<any[]>([])
   const [recentUsers, setRecentUsers] = useState<any[]>([])
   const [recentTx, setRecentTx] = useState<any[]>([])
-  const [providerBalances, setProviderBalances] = useState<any>({ jap: null, peakerr: null, smmwiz: null })
+  const [providers, setProviders] = useState<any>({})
+  const [healthStatus, setHealthStatus] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [approveId, setApproveId] = useState<string | null>(null)
   const [rejectId, setRejectId] = useState<string | null>(null)
-  const [adminNote, setAdminNote] = useState('')
   const [rejectNote, setRejectNote] = useState('')
-
-  useEffect(() => {
-    loadDashboard()
-  }, [])
+  const refreshInterval = 30000 // 30 seconds
 
   const loadDashboard = async () => {
-    setLoading(true)
     try {
-      const [dashboardRes, pendingRes, japRes, peakerrRes, smmwizRes] = await Promise.all([
+      const [dashRes, japRes, smmwizRes, healthRes] = await Promise.all([
         api.get('/api/admin/dashboard'),
-        api.get('/api/admin/manual-payments', { params: { status: 'pending', limit: 5 } }),
-        api.get('/api/admin/provider-balance/jap').catch(() => null),
-        api.get('/api/admin/provider-balance/peakerr').catch(() => null),
-        api.get('/api/admin/provider-balance/smmwiz').catch(() => null),
+        api.get('/api/admin/provider-balance/jap').catch(() => ({ data: null })),
+        api.get('/api/admin/provider-balance/smmwiz').catch(() => ({ data: null })),
+        api.get('/api/admin/health-detail').catch(() => ({ data: null })),
       ])
 
-      setStats(dashboardRes.data.stats)
-      setRecentUsers(dashboardRes.data.recent_users || [])
-      setRecentTx(dashboardRes.data.recent_transactions || [])
+      setStats(dashRes.data.stats)
+      setRecentUsers(dashRes.data.recent_users || [])
+      setRecentTx(dashRes.data.recent_transactions || [])
+      
+      const pendingRes = await api.get('/api/admin/manual-payments', {
+        params: { status: 'pending', limit: 100 }
+      }).catch(() => ({ data: { items: [] } }))
       setPendingPayments(pendingRes.data.items || [])
-      setProviderBalances({
-        jap: japRes?.data || null,
-        peakerr: peakerrRes?.data || null,
-        smmwiz: smmwizRes?.data || null,
+
+      setProviders({
+        jap: japRes.data,
+        smmwiz: smmwizRes.data,
       })
+
+      if (healthRes.data) setHealthStatus(healthRes.data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -55,16 +51,20 @@ export default function AdminDashboardPage() {
     }
   }
 
+  useEffect(() => {
+    loadDashboard()
+    const interval = setInterval(loadDashboard, refreshInterval)
+    return () => clearInterval(interval)
+  }, [])
+
   const handleApprove = async (payment: any) => {
     setActionLoading(true)
     try {
-      await api.post(`/api/admin/manual-payments/${payment.id}/approve`, { admin_note: adminNote })
+      await api.post(`/api/admin/manual-payments/${payment.id}/approve`)
       setApproveId(null)
-      setAdminNote('')
-      setPendingPayments(prev => prev.filter(item => item.id !== payment.id))
+      setPendingPayments(prev => prev.filter(p => p.id !== payment.id))
       await loadDashboard()
-      return
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
     } finally {
       setActionLoading(false)
@@ -75,218 +75,393 @@ export default function AdminDashboardPage() {
     if (!rejectNote.trim()) return
     setActionLoading(true)
     try {
-      await api.post(`/api/admin/manual-payments/${payment.id}/reject`, { admin_note: rejectNote })
+      await api.post(`/api/admin/manual-payments/${payment.id}/reject`, {
+        admin_note: rejectNote
+      })
       setRejectId(null)
       setRejectNote('')
-      setPendingPayments(prev => prev.filter(item => item.id !== payment.id))
+      setPendingPayments(prev => prev.filter(p => p.id !== payment.id))
       await loadDashboard()
-      return
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
     } finally {
       setActionLoading(false)
     }
   }
 
-  const STAT_CARDS = useMemo(() => stats ? [
-    { label: 'Total Users', value: stats.total_users?.toLocaleString(), icon: '👥', color: 'text-blue-400', sub: `+${stats.new_today} joined today` },
-    { label: 'Orders Today', value: stats.orders_today?.toLocaleString(), icon: '📦', color: 'text-purple-400', sub: `${stats.pending_orders} pending` },
-    { label: 'Revenue Today', value: formatCurrency(stats.revenue_today), icon: '💰', color: 'text-green-400', sub: 'Deposits received' },
-    { label: 'Monthly Revenue', value: formatCurrency(stats.revenue_month), icon: '📈', color: 'text-yellow-400', sub: 'This month total' },
-    { label: 'All-Time Revenue', value: formatCurrency(stats.revenue_all_time), icon: '🏆', color: 'text-pink-400', sub: 'Since launch' },
-    { label: 'Pending Orders', value: stats.pending_orders?.toLocaleString(), icon: '⏳', color: 'text-orange-400', sub: 'Needs attention' },
-  ] : [], [stats])
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="card h-32 animate-pulse bg-[#1F1F3A]" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
-          <p className="text-[#9CA3AF] text-sm">Platform management tools for BOASTLIB</p>
+      {/* SECTION 1: ADMIN HEADER */}
+      <div className="rounded-2xl p-6 text-white overflow-hidden relative" 
+        style={{ background: 'linear-gradient(135deg, #2D1B69 0%, #1a1340 100%)' }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Left side */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">👑</span>
+              <h1 className="text-3xl font-black">Platform Management</h1>
+            </div>
+            <p className="text-lg font-semibold mb-1">Welcome back, {user?.full_name}</p>
+            <div className="flex items-center gap-3 text-sm text-gray-300">
+              <span>Super Admin · boastlib.space</span>
+              {stats && <span>Last login: {new Date().toLocaleDateString()}</span>}
+            </div>
+          </div>
+
+          {/* Right side buttons */}
+          <div className="flex gap-3">
+            <Link href="/admin/power"
+              className="px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all hover:scale-105"
+              style={{ background: '#F59E0B', color: '#000' }}>
+              ⚡ ADMIN Power
+            </Link>
+            <a href="https://boastlib.space" target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2.5 rounded-xl font-bold text-sm border border-white/30 hover:border-white/60 transition-all">
+              🌐 View Site
+            </a>
+          </div>
         </div>
-        <Link href="/admin/power" className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm"
-          style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.2))', border: '1px solid rgba(245,158,11,0.4)', color: '#F59E0B' }}>
-          ⚡ ADMIN Power
-        </Link>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <div key={i} className="card h-28 animate-pulse bg-[#1F1F3A]" />)}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {STAT_CARDS.map(card => (
-            <div key={card.label} className={`card ${card.label === 'Pending Orders' && stats.pending_orders > 10 ? 'border border-red-500' : ''}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-2xl">{card.icon}</span>
-                <span className={`text-2xl font-black ${card.color}`}>{card.value}</span>
+      {/* SECTION 2: LIVE STATS (6 CARDS) */}
+      {stats && (
+        <div>
+          <h2 className="text-white font-bold mb-4">📊 Platform Statistics</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Total Users */}
+            <div className="card border-l-2" style={{ borderLeftColor: '#3B82F6' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">👥</span>
+                <span className="text-sm bg-green-500/20 text-green-400 px-2 py-1 rounded">
+                  +{stats.new_today} today
+                </span>
               </div>
-              <div className="text-white font-semibold text-sm">{card.label}</div>
-              <div className="text-[#6B7280] text-xs mt-1">{card.sub}</div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">Total Users</div>
+              <div className="text-white text-3xl font-black">{formatNumber(stats.total_users)}</div>
             </div>
-          ))}
+
+            {/* Orders Today */}
+            <div className="card border-l-2" style={{ borderLeftColor: '#A78BFA' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">📦</span>
+                {stats.pending_orders > 0 && (
+                  <span className="text-sm bg-orange-500/20 text-orange-400 px-2 py-1 rounded">
+                    {stats.pending_orders} pending
+                  </span>
+                )}
+              </div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">Orders Today</div>
+              <div className="text-white text-3xl font-black">{formatNumber(stats.orders_today)}</div>
+            </div>
+
+            {/* Today Revenue */}
+            <div className="card border-l-2" style={{ borderLeftColor: '#10B981' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">💰</span>
+              </div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">Revenue Today</div>
+              <div className="text-green-400 text-3xl font-black">{formatCurrency(stats.revenue_today)}</div>
+              <div className="text-gray-500 text-xs mt-1">Deposits received</div>
+            </div>
+
+            {/* This Month Revenue */}
+            <div className="card border-l-2" style={{ borderLeftColor: '#FBBF24' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">📈</span>
+              </div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">This Month</div>
+              <div className="text-yellow-400 text-3xl font-black">{formatCurrency(stats.revenue_month)}</div>
+              <div className="text-gray-500 text-xs mt-1">Monthly total</div>
+            </div>
+
+            {/* All Time Revenue */}
+            <div className="card border-l-2" style={{ borderLeftColor: '#EC4899' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">🏆</span>
+              </div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">All Time</div>
+              <div className="text-pink-400 text-3xl font-black">{formatCurrency(stats.revenue_all_time)}</div>
+              <div className="text-gray-500 text-xs mt-1">Since launch</div>
+            </div>
+
+            {/* Pending Orders */}
+            <div className={`card border-l-2 ${stats.pending_orders > 5 ? 'animate-pulse' : ''}`}
+              style={{ borderLeftColor: '#F97316' }}>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">⏳</span>
+                {stats.pending_orders > 0 && (
+                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold ${
+                    stats.pending_orders > 5 ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-500 text-white'
+                  }`}>●</span>
+                )}
+              </div>
+              <div className="text-gray-400 text-xs font-semibold uppercase mb-1">Pending Orders</div>
+              <div className="text-orange-400 text-3xl font-black">{formatNumber(stats.pending_orders)}</div>
+              <div className="text-gray-500 text-xs mt-1">Need processing</div>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {QUICK_ACTIONS.map(action => (
-          <Link key={action.href} href={action.href}
-            className="card flex flex-col gap-3 p-4 hover:border-[#3B82F6]/50 hover:scale-[1.02] transition-all no-underline">
-            <span className="text-2xl">{action.icon}</span>
-            <div className="text-white text-sm font-semibold">{action.label}</div>
+      {/* SECTION 3: MANAGEMENT QUICK ACTIONS */}
+      <div>
+        <h2 className="text-white font-bold mb-4">🛠️ Management Tools</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Users */}
+          <Link href="/admin/users"
+            className="card group hover:border-blue-400/50 hover:scale-[1.02] transition-all">
+            <div className="text-4xl mb-3">👥</div>
+            <h3 className="text-white font-bold mb-1">Users</h3>
+            <p className="text-gray-400 text-xs mb-3">Manage all accounts</p>
+            <div className="text-blue-400 text-lg font-black">{formatNumber(stats?.total_users || 0)}</div>
           </Link>
-        ))}
+
+          {/* Orders */}
+          <Link href="/admin/orders"
+            className="card group hover:border-purple-400/50 hover:scale-[1.02] transition-all">
+            <div className="text-4xl mb-3">📦</div>
+            <h3 className="text-white font-bold mb-1">Orders</h3>
+            <p className="text-gray-400 text-xs mb-3">Monitor & process</p>
+            <div className="text-purple-400 text-lg font-black">{formatNumber(stats?.orders_today || 0)} today</div>
+          </Link>
+
+          {/* Services */}
+          <Link href="/admin/services"
+            className="card group hover:border-cyan-400/50 hover:scale-[1.02] transition-all">
+            <div className="text-4xl mb-3">🛠️</div>
+            <h3 className="text-white font-bold mb-1">Services</h3>
+            <p className="text-gray-400 text-xs mb-3">Sync JAP & SMMWiz</p>
+            <div className="text-cyan-400 text-lg font-black">Live</div>
+          </Link>
+
+          {/* Transactions */}
+          <Link href="/admin/transactions"
+            className="card group hover:border-green-400/50 hover:scale-[1.02] transition-all">
+            <div className="text-4xl mb-3">💰</div>
+            <h3 className="text-white font-bold mb-1">Payments</h3>
+            <p className="text-gray-400 text-xs mb-3">All transactions</p>
+            <div className="text-green-400 text-lg font-black">View all</div>
+          </Link>
+
+          {/* Manual Payments */}
+          <Link href="/admin/manual-payments"
+            className={`card group ${pendingPayments.length > 0 ? 'border-orange-400/50' : ''} hover:border-orange-400/50 hover:scale-[1.02] transition-all`}>
+            <div className="text-4xl mb-3">🇱🇷</div>
+            <h3 className="text-white font-bold mb-1">Manual Payments</h3>
+            <p className="text-gray-400 text-xs mb-3">Liberia approvals</p>
+            {pendingPayments.length > 0 && (
+              <div className={`text-lg font-black ${pendingPayments.length > 0 ? 'text-orange-400 animate-pulse' : 'text-orange-400'}`}>
+                {pendingPayments.length} pending
+              </div>
+            )}
+          </Link>
+
+          {/* Settings */}
+          <Link href="/admin/settings"
+            className="card group hover:border-yellow-400/50 hover:scale-[1.02] transition-all">
+            <div className="text-4xl mb-3">⚙️</div>
+            <h3 className="text-white font-bold mb-1">Settings</h3>
+            <p className="text-gray-400 text-xs mb-3">Configure platform</p>
+            <div className="text-yellow-400 text-lg font-black">Configure</div>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-white font-bold">🇱🇷 Pending Manual Payments</h2>
-              <p className="text-[#9CA3AF] text-sm">Review and approve submitted mobile money payments.</p>
+      {/* SECTION 4: SMM PROVIDER STATUS */}
+      <div>
+        <h2 className="text-white font-bold mb-4">🔌 Provider Connection Status</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* JAP */}
+          <div className="card">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="text-white font-bold text-lg">JAP</div>
+                <div className="text-gray-400 text-xs">JustAnotherPanel</div>
+              </div>
+              <span className={`h-3 w-3 rounded-full ${
+                providers.jap?.balance ? 'bg-green-400' : 'bg-red-500'
+              }`} />
             </div>
-            <Link href="/admin/manual-payments" className="text-[#3B82F6] text-xs hover:underline">View All</Link>
+            {providers.jap?.balance ? (
+              <div>
+                <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
+                <div className="text-white text-lg font-bold mb-1">{providers.jap.balance}</div>
+                <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-red-400 font-semibold mb-2">🔴 Not Configured</div>
+                <div className="text-gray-400 text-xs mb-3">Add JAP_API_KEY to Railway env vars</div>
+              </div>
+            )}
           </div>
 
-          {pendingPayments.length === 0 ? (
-            <div className="rounded-2xl border border-green-500/20 bg-green-500/10 p-6 text-green-200 text-sm font-semibold">
-              ✅ No pending manual payments
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-3 py-1 text-orange-300 text-xs font-semibold">
-                {pendingPayments.length} Pending
+          {/* SMMWiz */}
+          <div className="card">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="text-white font-bold text-lg">SMMWiz</div>
+                <div className="text-gray-400 text-xs">SMMWiz Panel</div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#2D2D50] text-[#9CA3AF] text-left">
-                      <th className="py-3 px-3">User</th>
-                      <th className="py-3 px-3">Amount</th>
-                      <th className="py-3 px-3">Network</th>
-                      <th className="py-3 px-3">Phone</th>
-                      <th className="py-3 px-3">Transaction ID</th>
-                      <th className="py-3 px-3">Submitted</th>
-                      <th className="py-3 px-3">Actions</th>
+              <span className={`h-3 w-3 rounded-full ${
+                providers.smmwiz?.balance ? 'bg-green-400' : 'bg-red-500'
+              }`} />
+            </div>
+            {providers.smmwiz?.balance ? (
+              <div>
+                <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
+                <div className="text-white text-lg font-bold mb-1">{providers.smmwiz.balance}</div>
+                <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-red-400 font-semibold mb-2">🔴 Not Configured</div>
+                <div className="text-gray-400 text-xs mb-3">Add SMMWIZ_API_KEY to Railway env vars</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 5: PENDING MANUAL PAYMENTS */}
+      {pendingPayments.length > 0 && (
+        <div className="card border-l-4 border-orange-500">
+          <div className="mb-4">
+            <h2 className="text-white font-bold mb-2">🇱🇷 Pending Manual Payments</h2>
+            <div className="rounded-lg bg-orange-500/10 border border-orange-500/30 p-3">
+              <div className="text-orange-300 text-sm font-semibold">
+                ⚠️ {pendingPayments.length} payment(s) waiting for approval
+              </div>
+              <div className="text-orange-200 text-xs mt-1">
+                Verify on your phone and credit user balance
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#2D2D50] text-gray-400">
+                  <th className="text-left py-2 px-3">User</th>
+                  <th className="text-left py-2 px-3">Amount</th>
+                  <th className="text-left py-2 px-3">Network</th>
+                  <th className="text-left py-2 px-3">Phone</th>
+                  <th className="text-left py-2 px-3">Txn ID</th>
+                  <th className="text-left py-2 px-3">Time</th>
+                  <th className="text-left py-2 px-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#2D2D50]">
+                {pendingPayments.map(payment => (
+                  <Fragment key={payment.id}>
+                    <tr className="hover:bg-[#1F1F3A]">
+                      <td className="py-3 px-3">
+                        <div className="text-white font-medium text-sm">{payment.user?.full_name}</div>
+                        <div className="text-gray-400 text-xs">{payment.user?.email}</div>
+                      </td>
+                      <td className="py-3 px-3 text-green-400 font-bold">{formatCurrency(payment.amount)}</td>
+                      <td className="py-3 px-3 text-gray-300">{payment.network === 'MTN_LIBERIA' ? 'MTN' : 'Orange'}</td>
+                      <td className="py-3 px-3 text-gray-400 font-mono text-xs">{payment.phone_used}</td>
+                      <td className="py-3 px-3 text-gray-400 font-mono text-xs">{payment.transaction_id.slice(0, 8)}...</td>
+                      <td className="py-3 px-3 text-gray-400 text-xs">{formatDateTime(payment.created_at)}</td>
+                      <td className="py-3 px-3">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setApproveId(payment.id); setRejectId(null); setRejectNote('') }}
+                            className="px-3 py-1 rounded text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30">
+                            ✅ Approve
+                          </button>
+                          <button
+                            onClick={() => { setRejectId(payment.id); setApproveId(null); setRejectNote('') }}
+                            className="px-3 py-1 rounded text-xs font-semibold bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                            ❌ Reject
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#2D2D50]">
-                    {pendingPayments.map(payment => (
-                      <Fragment key={payment.id}>
-                        <tr className="hover:bg-[#1F1F3A] transition-colors">
-                          <td className="py-3 px-3">
-                            <div className="text-white font-semibold">{payment.user.full_name}</div>
-                            <div className="text-[#9CA3AF] text-xs">{payment.user.email}</div>
-                          </td>
-                          <td className="py-3 px-3 text-green-400 font-semibold">{formatCurrency(payment.amount)}</td>
-                          <td className="py-3 px-3">{payment.network === 'MTN_LIBERIA' ? 'MTN Lonestar' : 'Orange Money'}</td>
-                          <td className="py-3 px-3 text-[#9CA3AF] font-mono text-xs">{payment.phone_used}</td>
-                          <td className="py-3 px-3 text-[#9CA3AF] font-mono text-xs">{payment.transaction_id}</td>
-                          <td className="py-3 px-3 text-[#9CA3AF] text-xs">{formatDate(payment.created_at)}</td>
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-2">
-                              <button onClick={() => { setApproveId(payment.id); setRejectId(null); setAdminNote('') }}
-                                className="text-xs rounded-xl bg-green-500/10 text-green-300 px-3 py-2 hover:bg-green-500/20">
-                                ✅ Approve
+                    {(approveId === payment.id || rejectId === payment.id) && (
+                      <tr>
+                        <td colSpan={7} className="bg-[#16162D] p-4">
+                          <div className="space-y-3">
+                            <div className="text-white font-semibold">
+                              {approveId === payment.id ? '✅ Confirm Approval' : '❌ Confirm Rejection'}
+                            </div>
+                            {rejectId === payment.id && (
+                              <textarea
+                                value={rejectNote}
+                                onChange={e => setRejectNote(e.target.value)}
+                                className="input w-full min-h-[80px]"
+                                placeholder="Reason for rejection (required)"
+                              />
+                            )}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => { setApproveId(null); setRejectId(null); setRejectNote('') }}
+                                className="px-4 py-2 border border-gray-600 text-gray-300 rounded hover:border-gray-400">
+                                Cancel
                               </button>
-                              <button onClick={() => { setRejectId(payment.id); setApproveId(null); setRejectNote('') }}
-                                className="text-xs rounded-xl bg-red-500/10 text-red-300 px-3 py-2 hover:bg-red-500/20">
-                                ❌ Reject
+                              <button
+                                onClick={() => approveId === payment.id ? handleApprove(payment) : handleReject(payment)}
+                                disabled={actionLoading || (rejectId === payment.id && !rejectNote.trim())}
+                                className={`px-4 py-2 rounded font-semibold ${
+                                  approveId === payment.id
+                                    ? 'bg-green-500 text-black hover:bg-green-600'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
+                                } ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                {actionLoading ? 'Processing...' : approveId === payment.id ? '✅ Confirm' : '❌ Confirm'}
                               </button>
                             </div>
-                          </td>
-                        </tr>
-                        {(approveId === payment.id || rejectId === payment.id) && (
-                          <tr>
-                            <td colSpan={7} className="bg-[#16162D] p-4">
-                              <div className="space-y-3">
-                                <div className="text-white font-semibold">{approveId === payment.id ? 'Confirm approval' : 'Confirm rejection'}</div>
-                                <textarea
-                                  value={approveId === payment.id ? adminNote : rejectNote}
-                                  onChange={e => approveId === payment.id ? setAdminNote(e.target.value) : setRejectNote(e.target.value)}
-                                  className="input w-full min-h-[120px]"
-                                  placeholder={approveId === payment.id ? 'Optional admin note' : 'Reason for rejection (required)'}
-                                />
-                                <div className="flex gap-2 flex-wrap">
-                                  <button onClick={() => { setApproveId(null); setRejectId(null); setAdminNote(''); setRejectNote('') }}
-                                    className="px-4 py-2 border border-[#2D2D50] text-[#9CA3AF] rounded-xl hover:border-[#3B82F6] transition-all">
-                                    Cancel
-                                  </button>
-                                  <button onClick={() => approveId === payment.id ? handleApprove(payment) : handleReject(payment)}
-                                    disabled={actionLoading || (rejectId === payment.id && !rejectNote.trim())}
-                                    className={`px-4 py-2 rounded-xl font-semibold ${approveId === payment.id ? 'bg-green-500 text-black' : 'bg-red-500 text-white'} ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                    {actionLoading ? 'Processing...' : approveId === payment.id ? '✅ Confirm' : '❌ Confirm Reject'}
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-white font-bold">SMM Provider Status</h2>
-              <p className="text-[#9CA3AF] text-sm">Connection and balance for integrated providers.</p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {['jap', 'peakerr', 'smmwiz'].map(provider => {
-              const info = providerBalances[provider]
-              const label = provider === 'jap' ? 'JustAnotherPanel' : provider === 'peakerr' ? 'Peakerr' : 'SMMWiz'
-              const connected = info?.balance != null || info?.status === 'connected'
-              return (
-                <div key={provider} className="rounded-2xl border border-[#2D2D50] p-4 bg-[#11121F]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-white font-semibold">{label}</div>
-                      <div className="text-[#9CA3AF] text-xs">{connected ? 'Connected' : 'Not configured'}</div>
-                    </div>
-                    <span className={`h-3 w-3 rounded-full ${connected ? 'bg-green-400' : 'bg-red-500'}`} />
-                  </div>
-                  {connected && info?.balance && (
-                    <div className="mt-3 text-sm text-white">Balance: {info.balance} {info.currency || 'USD'}</div>
-                  )}
-                </div>
-              )
-            })}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      )}
 
+      {/* SECTION 6: RECENT ACTIVITY */}
       <div className="grid lg:grid-cols-2 gap-6">
+        {/* Recent Users */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold">Recent Users</h2>
-            <Link href="/admin/users" className="text-[#3B82F6] text-xs hover:underline">View all →</Link>
+            <h2 className="text-white font-bold">👥 New Registrations</h2>
+            <Link href="/admin/users" className="text-blue-400 text-xs hover:underline">
+              View all →
+            </Link>
           </div>
           {recentUsers.length === 0 ? (
-            <div className="text-[#6B7280] text-sm text-center py-6">No users yet</div>
+            <div className="text-gray-400 text-sm text-center py-6">No users yet</div>
           ) : (
             <div className="space-y-2">
-              {recentUsers.map(u => (
+              {recentUsers.slice(0, 8).map(u => (
                 <Link key={u.id} href={`/admin/users/${u.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-[#1F1F3A] hover:bg-[#2D2D50] transition-colors no-underline block">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-[#1F1F3A] hover:bg-[#2D2D50] transition-colors">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>
                     {u.full_name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-sm font-medium truncate">{u.full_name}</div>
-                    <div className="text-[#6B7280] text-xs truncate">{u.email}</div>
+                    <div className="text-white text-sm font-medium">{u.full_name}</div>
+                    <div className="text-gray-400 text-xs">{u.email}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-green-400 text-sm font-bold">{formatCurrency(u.balance)}</div>
-                    <span className={`badge text-xs ${u.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{u.status}</span>
                   </div>
                 </Link>
               ))}
@@ -294,32 +469,88 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
+        {/* Recent Transactions */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold">Recent Transactions</h2>
-            <Link href="/admin/transactions" className="text-[#3B82F6] text-xs hover:underline">View all →</Link>
+            <h2 className="text-white font-bold">💳 Recent Payments</h2>
+            <Link href="/admin/transactions" className="text-blue-400 text-xs hover:underline">
+              View all →
+            </Link>
           </div>
           {recentTx.length === 0 ? (
-            <div className="text-[#6B7280] text-sm text-center py-6">No transactions yet</div>
+            <div className="text-gray-400 text-sm text-center py-6">No transactions yet</div>
           ) : (
             <div className="space-y-2">
-              {recentTx.map((tx: any) => (
-                <div key={tx.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#1F1F3A]">
-                  <span className="text-lg">{tx.amount >= 0 ? '💰' : '📤'}</span>
+              {recentTx.slice(0, 8).map((tx: any) => (
+                <div key={tx.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#1F1F3A]">
+                  <span className="text-lg">{tx.type === 'deposit' ? '💰' : '📤'}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-sm font-medium truncate">{tx.user_name}</div>
-                    <div className="text-[#6B7280] text-xs">{tx.type} · {formatDateTime(tx.created_at)}</div>
+                    <div className="text-white text-sm font-medium">{tx.user_name}</div>
+                    <div className="text-gray-400 text-xs">{tx.type} · {formatDateTime(tx.created_at)}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className={`font-bold text-sm ${tx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {tx.amount >= 0 ? '+' : ''}{formatCurrency(Math.abs(tx.amount))}
+                      {tx.amount >= 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                     </div>
-                    <span className={`badge text-xs ${tx.status === 'completed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>{tx.status}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* SECTION 7: PLATFORM HEALTH */}
+      <div>
+        <h2 className="text-white font-bold mb-4">🏥 Platform Health</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* API Status */}
+          <div className="card">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🌐</span>
+              <div className="flex-1">
+                <div className="text-gray-400 text-xs">API Status</div>
+                <div className="text-green-400 text-sm font-bold">🟢 Operational</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Database */}
+          <div className="card">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🗄️</span>
+              <div className="flex-1">
+                <div className="text-gray-400 text-xs">Database</div>
+                <div className={`text-sm font-bold ${
+                  healthStatus?.database === 'connected' ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {healthStatus?.database === 'connected' ? '🟢 Connected' : '🔴 Error'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Orders Queue */}
+          <div className="card">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">📦</span>
+              <div className="flex-1">
+                <div className="text-gray-400 text-xs">Pending Queue</div>
+                <div className="text-white text-sm font-bold">{stats?.pending_orders || 0}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* System Status */}
+          <div className="card">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⚙️</span>
+              <div className="flex-1">
+                <div className="text-gray-400 text-xs">System</div>
+                <div className="text-green-400 text-sm font-bold">🟢 OK</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

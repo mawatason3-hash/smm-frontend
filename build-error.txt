@@ -1,0 +1,31 @@
+
+> boastlib-frontend@1.0.0 build
+> next build
+
+  Γû▓ Next.js 14.2.5
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next-pwa\register.js
+> [PWA] Service worker: C:\Users\ggggg\Downloads\boastlib-complete\frontend\public\sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+
+> Build error occurred
+Error: ENOENT: no such file or directory, open 'C:\Users\ggggg\Downloads\boastlib-complete\frontend\.next\build-manifest.json'
+    at async open (node:internal/fs/promises:637:25)
+    at async Object.readFile (node:internal/fs/promises:1249:14)
+    at async readManifest (C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\build\index.js:164:23)
+    at async C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\build\index.js:1041:35
+    at async Span.traceAsyncFn (C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\trace\trace.js:154:20)
+    at async build (C:\Users\ggggg\Downloads\boastlib-complete\frontend\node_modules\next\dist\build\index.js:366:9) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\ggggg\\Downloads\\boastlib-complete\\frontend\\.next\\build-manifest.json'
+}

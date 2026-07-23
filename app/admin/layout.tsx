@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import api from '@/lib/api'
+import PWAInstallButton from '@/components/PWAInstallButton'
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -109,6 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-3 border-t border-[#2D2D50]">
+          <PWAInstallButton />
           <button onClick={logout} className="sidebar-link w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/10">
             <span className="w-5 text-center">🚪</span>
             <span>Logout</span>
