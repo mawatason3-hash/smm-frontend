@@ -12,6 +12,7 @@ export default function AdminManualPaymentsPage() {
   const [status, setStatus] = useState('pending')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, all: 0 })
   const [loading, setLoading] = useState(true)
   const [approveModal, setApproveModal] = useState<any>(null)
   const [rejectModal, setRejectModal] = useState<any>(null)
@@ -31,6 +32,7 @@ export default function AdminManualPaymentsPage() {
       })
       setPayments(res.data.items)
       setTotal(res.data.total)
+      setCounts(res.data.counts || { pending: 0, approved: 0, rejected: 0, all: res.data.total || 0 })
     } catch (err) {
       showToast('Failed to load manual payments', 'error')
     } finally {
@@ -88,19 +90,19 @@ export default function AdminManualPaymentsPage() {
   const statsData = [
     {
       label: 'Pending',
-      value: payments.filter(p => p.status === 'pending').length,
+      value: counts.pending,
       color: 'yellow',
       icon: '⏳'
     },
     {
       label: 'Approved',
-      value: payments.filter(p => p.status === 'approved').length,
+      value: counts.approved,
       color: 'green',
       icon: '✅'
     },
     {
       label: 'Rejected',
-      value: payments.filter(p => p.status === 'rejected').length,
+      value: counts.rejected,
       color: 'red',
       icon: '❌'
     }

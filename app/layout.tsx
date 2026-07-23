@@ -4,15 +4,23 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 
 export const metadata: Metadata = {
-  title: 'BOASTLIB — Cheapest SMM Panel',
-  description: 'Boastlib.space is the cheapest SMM panel for Instagram, TikTok, YouTube, Facebook and more. Fast delivery, low prices, and trusted service.',
+  title: 'BOASTLIB — Cheapest SMM Panel | Buy Instagram, TikTok, YouTube Followers',
+  description: 'Cheapest SMM panel with real-time delivery. Buy Instagram followers, TikTok likes, YouTube views, Facebook likes from $0.001. Instant delivery. 1,049+ services.',
+  keywords: 'cheapest smm panel, buy instagram followers, buy tiktok likes, buy youtube views, smm panel cheap, instagram followers cheap, tiktok followers, social media marketing panel',
   metadataBase: new URL('https://boastlib.space'),
   openGraph: {
     title: 'BOASTLIB — Cheapest SMM Panel',
-    description: 'Boastlib.space is the cheapest SMM panel for Instagram, TikTok, YouTube, Facebook and more. Fast delivery, low prices, and trusted service.',
+    description: 'Buy Instagram followers, TikTok likes, YouTube views from $0.001. Instant delivery.',
     url: 'https://boastlib.space',
     siteName: 'BOASTLIB',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BOASTLIB — Cheapest SMM Panel',
+    description: 'Cheapest SMM panel. Instant delivery. Starting from $0.001',
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,
@@ -21,6 +29,9 @@ export const metadata: Metadata = {
       index: true,
       follow: true,
     },
+  },
+  alternates: {
+    canonical: 'https://boastlib.space',
   },
   icons: { icon: '/favicon.ico' },
 }

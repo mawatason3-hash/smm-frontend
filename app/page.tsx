@@ -36,8 +36,15 @@ export default function LandingPage() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            {['Home', 'Services', 'Pricing', 'FAQ'].map(item => (
-              <Link key={item} href={item === 'Home' ? '/' : `/#${item.toLowerCase()}`} className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors">{item}</Link>
+            {[
+              { label: 'Home', href: '/' },
+              { label: 'Services', href: '/services' },
+              { label: 'Blog', href: '/blog' },
+              { label: 'Instagram Followers', href: '/instagram-followers' },
+              { label: 'TikTok Likes', href: '/tiktok-likes' },
+              { label: 'YouTube Views', href: '/youtube-views' },
+            ].map(item => (
+              <Link key={item.label} href={item.href} className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors">{item.label}</Link>
             ))}
           </div>
 
@@ -73,9 +80,22 @@ export default function LandingPage() {
                 The cheapest SMM panel with real-time delivery. Instagram, TikTok, YouTube, Facebook and more. Starting from <span className="text-white font-semibold">$0.001 per 1K</span>.
               </p>
 
-              <div className="flex flex-wrap gap-4 mb-10">
+              <div className="flex flex-wrap gap-4 mb-8">
                 <Link href="/auth/register" className="btn-primary text-base px-8 py-3.5">Get Started Free</Link>
                 <Link href="#services" className="text-white border border-[#2D2D50] hover:border-[#3B82F6] px-8 py-3.5 rounded-xl font-semibold transition-all hover:bg-[#1F1F3A] text-sm">View Services</Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+                {[
+                  { label: 'Instagram Followers', href: '/instagram-followers', icon: '📸' },
+                  { label: 'TikTok Likes', href: '/tiktok-likes', icon: '🎵' },
+                  { label: 'YouTube Views', href: '/youtube-views', icon: '▶️' },
+                ].map(item => (
+                  <Link key={item.label} href={item.href} className="inline-flex items-center gap-2 rounded-full border border-[#2D2D50] bg-white/5 px-4 py-3 text-sm font-semibold text-[#E5E7EB] hover:border-[#3B82F6] hover:bg-[#111827] transition-all">
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
               </div>
 
               {/* Stats */}
@@ -135,6 +155,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SEO Landing Pages */}
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto text-center mb-10">
+          <p className="text-sm uppercase tracking-[0.3em] text-green-400">Featured Offers</p>
+          <h2 className="text-3xl font-black text-white mt-3">Popular Landing Pages</h2>
+          <p className="text-[#9CA3AF] max-w-2xl mx-auto mt-3">Direct access to our highest-converting pages for Instagram, TikTok, and YouTube growth.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5">
+          {[
+            {
+              title: 'Instagram Followers',
+              description: 'Buy followers at the cheapest rate with fast delivery and high retention.',
+              href: '/instagram-followers',
+              badge: 'Best Seller',
+            },
+            {
+              title: 'TikTok Likes',
+              description: 'Boost your TikTok engagement quickly with affordable likes orders.',
+              href: '/tiktok-likes',
+              badge: 'Trending',
+            },
+            {
+              title: 'YouTube Views',
+              description: 'Grow your video visibility with reliable YouTube views delivery.',
+              href: '/youtube-views',
+              badge: 'High Value',
+            },
+          ].map(card => (
+            <Link key={card.title} href={card.href} className="card group border border-[#2D2D50] p-6 hover:border-[#3B82F6] transition-all">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <h3 className="text-xl font-bold text-white">{card.title}</h3>
+                <span className="rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold px-3 py-1">{card.badge}</span>
+              </div>
+              <p className="text-[#9CA3AF] mb-6">{card.description}</p>
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                <span>Explore</span>
+                <span>→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
@@ -145,7 +208,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { step: '1', title: 'Create Account', desc: 'Register free in 30 seconds. No credit card needed to sign up.', icon: '👤' },
-              { step: '2', title: 'Add Funds', desc: 'Deposit using card (Paystack), mobile money, or crypto. Instant credit.', icon: '💳' },
+              { step: '2', title: 'Add Funds', desc: 'Deposit using card (DodoPay), mobile money, or crypto. Instant credit.', icon: '💳' },
               { step: '3', title: 'Place Order', desc: 'Select your service, paste your link, set quantity. Done — watch it grow.', icon: '🚀' },
             ].map((item) => (
               <div key={item.step} className="card relative">
@@ -235,14 +298,14 @@ export default function LandingPage() {
               <p className="text-[#6B7280] text-sm leading-relaxed">The cheapest SMM panel with real-time delivery across all major platforms.</p>
             </div>
             {[
-              { title: 'Links', links: ['Home', 'Services', 'Pricing', 'FAQ'] },
-              { title: 'About', links: ['About Us', 'Blog', 'Contact'] },
-              { title: 'Social', links: ['Telegram', 'WhatsApp', 'Twitter'] },
+              { title: 'Links', links: [{ label: 'Home', href: '/' }, { label: 'Services', href: '/services' }, { label: 'Blog', href: '/blog' }] },
+              { title: 'SMM Pages', links: [{ label: 'Instagram Followers', href: '/instagram-followers' }, { label: 'TikTok Likes', href: '/tiktok-likes' }, { label: 'YouTube Views', href: '/youtube-views' }] },
+              { title: 'Social', links: [{ label: 'Telegram', href: 'https://t.me/boastlib_support' }, { label: 'WhatsApp', href: 'https://wa.me/250792405593' }, { label: 'Twitter', href: 'https://twitter.com/boastlib' }] },
             ].map(col => (
               <div key={col.title}>
                 <div className="text-white font-semibold mb-3 text-sm">{col.title}</div>
                 {col.links.map(link => (
-                  <div key={link} className="text-[#6B7280] hover:text-white text-sm mb-2 cursor-pointer transition-colors">{link}</div>
+                  <a key={link.label} href={link.href} className="text-[#6B7280] hover:text-white text-sm mb-2 block transition-colors">{link.label}</a>
                 ))}
               </div>
             ))}

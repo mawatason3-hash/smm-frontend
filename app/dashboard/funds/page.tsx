@@ -54,10 +54,10 @@ export default function AddFundsPage() {
       if (paymentMethods.length > 0) setSelectedMethod(paymentMethods[0].id)
     } catch (err) {
       setMethods([
-        { id: 'paystack', name: 'Credit/Debit Card', description: 'Visa, Mastercard via Paystack', icon: '💳', instant: true },
+        { id: 'dodopayments', name: 'Credit/Debit Card', description: 'Visa, Mastercard via DodoPay', icon: '💳', instant: true },
         { id: 'crypto', name: 'Cryptocurrency', description: 'Bitcoin, USDT TRC20', icon: '₿', instant: false },
       ])
-      setSelectedMethod('paystack')
+      setSelectedMethod('dodopayments')
     }
   }
 
@@ -86,12 +86,12 @@ export default function AddFundsPage() {
     if (amount < 1) { showToast('Minimum deposit is $1', 'error'); return }
     setLoading(true)
     try {
-      if (selectedMethod === 'paystack') {
-        const res = await api.post('/api/payments/paystack/initialize', { amount, payment_method: 'paystack' })
-        window.location.href = res.data.authorization_url
-      } else if (selectedMethod === 'dodopayments') {
+      if (selectedMethod === 'dodopayments') {
         const res = await api.post('/api/payments/dodopayments/initialize', { amount, payment_method: 'dodopayments' })
         window.location.href = res.data.checkout_url
+      } else if (selectedMethod === 'paystack') {
+        const res = await api.post('/api/payments/paystack/initialize', { amount, payment_method: 'paystack' })
+        window.location.href = res.data.authorization_url
       } else if (selectedMethod.startsWith('pawapay_')) {
         if (!phone) { showToast('Phone number required for mobile money', 'error'); setLoading(false); return }
         const res = await api.post('/api/payments/pawapay/initiate', {
@@ -138,6 +138,11 @@ export default function AddFundsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+      {process.env.NODE_ENV !== 'production' && (
+        <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4 text-yellow-100 text-sm">
+          🧪 TEST MODE — Payments are simulated. Use test credentials only.
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-black text-white">Add Funds</h1>
         <p className="text-[#9CA3AF] text-sm mt-1">Top up your BOASTLIB wallet</p>

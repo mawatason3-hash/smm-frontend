@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import api from '@/lib/api'
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -11,7 +12,7 @@ const ADMIN_NAV = [
   { href: '/admin/orders', label: 'Orders', icon: '📦' },
   { href: '/admin/services', label: 'Services', icon: '🛠️' },
   { href: '/admin/transactions', label: 'Transactions', icon: '💰' },
-  { href: '/admin/manual-payments', label: 'Manual Payments', icon: '🇱🇷' },
+  { href: '/admin/manual-payments', label: 'Manual Payments 🇱🇷', icon: '📱' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
   { href: '/admin/activity-log', label: 'Activity Log', icon: '📋' },
 ]
@@ -22,12 +23,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [clock, setClock] = useState('')
+  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !['admin', 'super_admin'].includes(user?.role || ''))) {
       router.push('/dashboard')
     }
   }, [isAuthenticated, isLoading, user])
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      try {
+        const res = await api.get('/api/admin/manual-payments', { params: { status: 'pending', limit: 1 } })
+        setPendingCount(res.data.total || 0)
+      } catch {
+        setPendingCount(0)
+      }
+    }
+    fetchPending()
+  }, [])
 
   useEffect(() => {
     const tick = () => setClock(new Date().toLocaleTimeString())
@@ -43,11 +57,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex h-screen overflow-hidden" style={{ background: '#0B0B1A' }}>
       {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Admin Sidebar */}
       <aside className={`fixed top-0 left-0 h-full z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ width: 260, background: '#0F0F1F', borderRight: '1px solid #2D2D50' }}>
 
-        {/* Logo + Admin badge */}
         <div className="p-5 border-b border-[#2D2D50]">
           <Link href="/" className="inline-flex items-center mb-3">
             <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
@@ -59,7 +71,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        {/* Admin info */}
         <div className="p-4 border-b border-[#2D2D50]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm" style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
@@ -67,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="min-w-0">
               <div className="text-white text-sm font-semibold truncate">{user?.full_name}</div>
-              <div className="text-yellow-400 text-xs capitalize">{user?.role?.replace('_', ' ')}</div>
+              <div className="text-yellow-400 text-xs">{user?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
             </div>
           </div>
         </div>
@@ -79,7 +90,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
                 className={`sidebar-link ${active ? (item.gold ? 'admin-power active' : 'active') : (item.gold ? 'admin-power' : '')}`}>
                 <span className="text-base w-5 text-center">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.href === '/admin/manual-payments' && pendingCount > 0 && (
+                  <span className="inline-flex items-center justify-center rounded-full bg-orange-500 text-white text-[10px] font-semibold px-2 py-1 ml-auto">
+                    {pendingCount}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -87,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="pt-3 border-t border-[#2D2D50] mt-3">
             <Link href="/dashboard" className="sidebar-link">
               <span className="text-base w-5 text-center">👤</span>
-              <span>User Dashboard</span>
+              <span>Back to Dashboard</span>
             </Link>
           </div>
         </nav>
@@ -100,7 +116,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="flex items-center gap-4 px-4 sm:px-6 h-14 border-b border-[#2D2D50] flex-shrink-0" style={{ background: '#0F0F1F' }}>
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[#9CA3AF] hover:text-white">☰</button>
