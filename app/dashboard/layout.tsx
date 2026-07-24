@@ -20,8 +20,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   } = useInstallPrompt()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.push('/auth/login')
-  }, [isAuthenticated, isLoading, router])
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth/login')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isLoading])
 
   useEffect(() => {
     if (typeof window === 'undefined') return

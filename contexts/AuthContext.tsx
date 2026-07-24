@@ -31,12 +31,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      if (!token) { setIsLoading(false); return }
+      if (!token) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
       const res = await api.get('/api/auth/me')
       setUser(res.data)
-    } catch {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+      }
       setUser(null)
     } finally {
       setIsLoading(false)
