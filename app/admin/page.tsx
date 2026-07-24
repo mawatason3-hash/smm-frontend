@@ -298,7 +298,9 @@ export default function AdminDashboardPage() {
             {providers.jap?.balance ? (
               <div>
                 <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
-                <div className="text-white text-lg font-bold mb-1">{providers.jap.balance}</div>
+                <div className="text-white text-lg font-bold mb-1">
+                  ${typeof providers.jap.balance === 'object' ? providers.jap.balance.balance : providers.jap.balance}
+                </div>
                 <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
               </div>
             ) : (
@@ -323,7 +325,9 @@ export default function AdminDashboardPage() {
             {providers.smmwiz?.balance ? (
               <div>
                 <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
-                <div className="text-white text-lg font-bold mb-1">{providers.smmwiz.balance}</div>
+                <div className="text-white text-lg font-bold mb-1">
+                  ${typeof providers.smmwiz.balance === 'object' ? providers.smmwiz.balance.balance : providers.smmwiz.balance}
+                </div>
                 <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
               </div>
             ) : (
