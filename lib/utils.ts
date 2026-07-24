@@ -11,20 +11,30 @@ export function formatDate(dateStr: string): string {
   })
 }
 
-export function formatDateTime(dateStr: string): string {
+export function formatDateTime(dateStr?: string | number | null): string {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleString('en-US', {
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
 }
 
-export function formatCurrency(amount: number): string {
-  return `$${amount.toFixed(2)}`
+export function formatCurrency(amount?: number | string | null): string {
+  const value = typeof amount === 'string' ? Number(amount) : amount
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return '$0.00'
+  }
+  return `$${value.toFixed(2)}`
 }
 
-export function formatNumber(n: number): string {
-  return n.toLocaleString()
+export function formatNumber(n?: number | string | null): string {
+  const value = typeof n === 'string' ? Number(n) : n
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return '0'
+  }
+  return value.toLocaleString()
 }
 
 export function truncateLink(link: string, max = 30): string {
@@ -39,8 +49,13 @@ export function getGreeting(): string {
   return 'Good evening'
 }
 
-export function calculateCharge(ratePerK: number, quantity: number): number {
-  return (ratePerK * quantity) / 1000
+export function calculateCharge(ratePerK?: number | null, quantity?: number | null): number {
+  const rate = typeof ratePerK === 'number' ? ratePerK : Number(ratePerK)
+  const qty = typeof quantity === 'number' ? quantity : Number(quantity)
+  if (Number.isNaN(rate) || Number.isNaN(qty)) {
+    return 0
+  }
+  return (rate * qty) / 1000
 }
 
 export function getPlatformIcon(platform: string): string {

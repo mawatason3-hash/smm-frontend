@@ -33,7 +33,11 @@ export default function AdminPowerPage() {
   }, [])
 
   const providerCost = selectedService ? calculateCharge(
-    selectedService.cost_per_1k ?? selectedService.rate_per_1k * 0.7,
+    typeof selectedService.cost_per_1k === 'number'
+      ? selectedService.cost_per_1k
+      : typeof selectedService.rate_per_1k === 'number'
+        ? selectedService.rate_per_1k * 0.7
+        : 0,
     quantity
   ) : 0
 
@@ -137,7 +141,7 @@ export default function AdminPowerPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-sm font-medium text-[#9CA3AF]">Quantity</label>
-                    {selectedService && <span className="text-xs text-[#6B7280]">Min: {selectedService.min_qty.toLocaleString()}</span>}
+                    {selectedService && <span className="text-xs text-[#6B7280]">Min: {selectedService.min_qty?.toLocaleString() ?? '0'}</span>}
                   </div>
                   <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))}
                     min={selectedService?.min_qty || 100} className="input" />

@@ -32,8 +32,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   )
 
-  if (!isAuthenticated) return null
-
   const isAdmin = user?.role === 'super_admin' || user?.role === 'admin'
 
   useEffect(() => {
@@ -47,6 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (isInstalled || (!browserSupportsInstall && !isIOS)) return
     setShowLoginInstallModal(true)
   }, [isInstalled, browserSupportsInstall, isIOS])
+
+  if (!isAuthenticated) return null
 
   const handleLoginInstall = async () => {
     if (deferredPrompt) {

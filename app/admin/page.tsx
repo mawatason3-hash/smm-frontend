@@ -29,21 +29,22 @@ export default function AdminDashboardPage() {
         api.get('/api/admin/health-detail').catch(() => ({ data: null })),
       ])
 
-      setStats(dashRes.data.stats)
-      setRecentUsers(dashRes.data.recent_users || [])
-      setRecentTx(dashRes.data.recent_transactions || [])
+      const dashData = dashRes.data || {}
+      setStats(dashData.stats ?? null)
+      setRecentUsers(dashData.recent_users || [])
+      setRecentTx(dashData.recent_transactions || [])
       
       const pendingRes = await api.get('/api/admin/manual-payments', {
         params: { status: 'pending', limit: 100 }
       }).catch(() => ({ data: { items: [] } }))
-      setPendingPayments(pendingRes.data.items || [])
+      setPendingPayments(pendingRes.data?.items || [])
 
       setProviders({
-        jap: japRes.data,
-        smmwiz: smmwizRes.data,
+        jap: japRes.data ?? null,
+        smmwiz: smmwizRes.data ?? null,
       })
 
-      if (healthRes.data) setHealthStatus(healthRes.data)
+      setHealthStatus(healthRes.data ?? null)
     } catch (err) {
       console.error(err)
     } finally {
@@ -374,7 +375,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-3 text-green-400 font-bold">{formatCurrency(payment.amount)}</td>
                       <td className="py-3 px-3 text-gray-300">{payment.network === 'MTN_LIBERIA' ? 'MTN' : 'Orange'}</td>
                       <td className="py-3 px-3 text-gray-400 font-mono text-xs">{payment.phone_used}</td>
-                      <td className="py-3 px-3 text-gray-400 font-mono text-xs">{payment.transaction_id.slice(0, 8)}...</td>
+                      <td className="py-3 px-3 text-gray-400 font-mono text-xs">{payment.transaction_id ? `${payment.transaction_id.slice(0, 8)}...` : '—'}</td>
                       <td className="py-3 px-3 text-gray-400 text-xs">{formatDateTime(payment.created_at)}</td>
                       <td className="py-3 px-3">
                         <div className="flex gap-2">

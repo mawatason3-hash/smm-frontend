@@ -52,7 +52,66 @@ export default function LandingPage() {
             <Link href="/auth/login" className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors px-4 py-2 rounded-lg border border-[#2D2D50] hover:border-[#3B82F6]">Login</Link>
             <Link href="/auth/register" className="btn-primary text-sm px-5 py-2.5">Get Started</Link>
           </div>
+
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden text-white p-2"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {menuOpen && (
+          <div className="md:hidden fixed top-16 left-0 right-0 z-40 border-b border-[#2D2D50]/60 backdrop-blur-md" style={{ background: 'rgba(11,11,26,0.98)' }}>
+            <div className="flex flex-col px-4 py-4 gap-1">
+              {[
+                { label: 'Home', href: '/' },
+                { label: 'Services', href: '/services' },
+                { label: 'Pricing', href: '/services' },
+                { label: 'Blog', href: '/blog' },
+              ].map(item => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-[#9CA3AF] hover:text-white text-sm font-medium py-3 px-2 border-b border-[#2D2D50]/40"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href="/auth/login"
+                onClick={() => setMenuOpen(false)}
+                className="text-[#9CA3AF] hover:text-white text-sm font-medium py-3 px-2 border-b border-[#2D2D50]/40"
+              >
+                Login
+              </Link>
+              <Link
+                href="/auth/register"
+                onClick={() => setMenuOpen(false)}
+                className="btn-primary text-sm px-5 py-3 text-center mt-2"
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/"
+                onClick={() => setMenuOpen(false)}
+                className="text-[#9CA3AF] hover:text-white text-sm font-medium py-3 px-2 border-b border-[#2D2D50]/40"
+              >
+                Install App
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
