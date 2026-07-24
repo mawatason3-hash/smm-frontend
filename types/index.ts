@@ -6,10 +6,10 @@ export interface User {
   country?: string
   role: 'user' | 'admin' | 'super_admin'
   status: 'active' | 'suspended' | 'banned'
-  balance: number
+  balance: number | string  // Handle both number and string from API
   referral_code?: string
   is_developer: boolean
-  api_key?: string
+  api_key?: string | null
   admin_power_used: number
   created_at: string
 }

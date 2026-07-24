@@ -38,7 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const res = await api.get('/api/auth/me')
-      setUser(res.data)
+      // Ensure response has required user fields
+      if (res.data && typeof res.data === 'object' && 'id' in res.data && 'email' in res.data) {
+        setUser(res.data as User)
+      } else {
+        setUser(null)
+      }
     } catch (error: any) {
       if (error?.response?.status === 401) {
         localStorage.removeItem('access_token')
@@ -60,7 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Fetch user data and check role
     const userRes = await api.get('/api/auth/me')
     const userData = userRes.data
-    setUser(userData)
+    
+    // Validate user data
+    if (!userData || typeof userData !== 'object' || !('id' in userData) || !('email' in userData)) {
+      throw new Error('Invalid user data received')
+    }
+    
+    setUser(userData as User)
 
     if (userData.role !== 'super_admin' && userData.role !== 'admin') {
       const alreadySeen = localStorage.getItem('install_prompt_shown') === 'true'

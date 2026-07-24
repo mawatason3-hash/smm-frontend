@@ -159,9 +159,9 @@ export default function DeveloperPage() {
             </div>
             <p className="text-[#9CA3AF] text-xs mb-3">{ep.desc}</p>
             <div className="text-xs text-[#6B7280] mb-2">Params: {ep.params}</div>
-            <div className="p-3 rounded-lg text-xs font-mono text-green-400 overflow-x-auto" style={{ background: '#0D1117', border: '1px solid #2D2D50' }}>
-              {ep.example}
-            </div>
+            <pre className="p-3 rounded-lg text-xs font-mono text-green-400 overflow-x-auto whitespace-pre-wrap break-words" style={{ background: '#0D1117', border: '1px solid #2D2D50' }}>
+{String(ep.example)}
+            </pre>
           </div>
         ))}
       </div>

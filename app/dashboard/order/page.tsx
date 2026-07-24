@@ -40,7 +40,7 @@ function OrderPageContent() {
   useEffect(() => { filterServices(serviceSearch) }, [serviceSearch, services])
 
   const charge = selectedService ? calculateCharge(selectedService.rate_per_1k, quantity) : 0
-  const canAfford = (user?.balance || 0) >= charge
+  const canAfford = Number(user?.balance || 0) >= charge
   const validQty = selectedService ? (quantity >= selectedService.min_qty && quantity <= selectedService.max_qty) : false
 
   const placeOrder = async () => {
@@ -224,7 +224,7 @@ function OrderPageContent() {
                   </div>
                   {!canAfford && (
                     <div className="text-red-400 text-xs mt-1">
-                      Need {formatCurrency(charge - (user?.balance || 0))} more →{' '}
+                      Need {formatCurrency(charge - Number(user?.balance || 0))} more →{' '}
                       <a href="/dashboard/funds" className="underline">Add funds</a>
                     </div>
                   )}
