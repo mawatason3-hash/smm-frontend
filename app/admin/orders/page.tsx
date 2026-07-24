@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
-import { formatCurrency, formatDateTime, getPlatformIcon, truncateLink } from '@/lib/utils'
+import { formatCurrency, formatDateTime, truncateLink } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 import { STATUS_CONFIG, PLATFORMS } from '@/types'
 
 export default function AdminOrdersPage() {
@@ -75,12 +76,12 @@ export default function AdminOrdersPage() {
                     <div className="text-white text-sm">{order.user_name || '—'}</div>
                     <div className="text-[#6B7280] text-xs">{order.user_email || ''}</div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span>{getPlatformIcon(order.platform)}</span>
-                      <span className="text-white text-xs max-w-[120px] truncate">{order.service_name}</span>
-                    </div>
-                  </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg"><PlatformIcon platform={order.platform} size={18} /></span>
+                              <span className="text-white text-xs max-w-[120px] truncate">{order.service_name}</span>
+                            </div>
+                          </td>
                   <td className="px-4 py-3 text-[#9CA3AF] text-xs font-mono">{truncateLink(order.link, 25)}</td>
                   <td className="px-4 py-3 text-white">{order.quantity?.toLocaleString()}</td>
                   <td className="px-4 py-3 text-white font-medium">{formatCurrency(order.charge)}</td>

@@ -13,10 +13,16 @@ function RegisterForm() {
   const [agreed, setAgreed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [hasReferral, setHasReferral] = useState(false)
-  const { register } = useAuth()
+  const { user, isLoading, register } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push('/')
+    }
+  }, [isLoading, user, router])
 
   useEffect(() => {
     const ref = searchParams.get('ref')

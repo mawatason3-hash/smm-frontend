@@ -23,17 +23,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!isLoading && !isAuthenticated) router.push('/auth/login')
   }, [isAuthenticated, isLoading, router])
 
-  if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B0B1A' }}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>B</div>
-        <div className="text-[#6B7280] text-sm">Loading...</div>
-      </div>
-    </div>
-  )
-
-  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin'
-
   useEffect(() => {
     if (typeof window === 'undefined') return
     const pending = localStorage.getItem('install_prompt_pending') === 'true'
@@ -45,6 +34,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (isInstalled || (!browserSupportsInstall && !isIOS)) return
     setShowLoginInstallModal(true)
   }, [isInstalled, browserSupportsInstall, isIOS])
+
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B0B1A' }}>
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>B</div>
+        <div className="text-[#6B7280] text-sm">Loading...</div>
+      </div>
+    </div>
+  )
+
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin'
 
   if (!isAuthenticated) return null
 

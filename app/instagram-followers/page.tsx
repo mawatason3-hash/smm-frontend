@@ -3,11 +3,13 @@ export const metadata = {
   description: 'Buy Instagram followers at the cheapest prices with instant delivery and high retention from BOASTLIB.',
 }
 
+import PlatformIcon from '@/lib/platformIcons'
+
 export default function InstagramFollowersPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 py-16 px-4">
       <div className="space-y-4 text-center">
-        <p className="text-sm text-green-400 uppercase tracking-[0.3em]">Instagram</p>
+        <p className="text-sm text-green-400 uppercase tracking-[0.3em]"><span className="inline-flex items-center gap-2"><PlatformIcon platform="instagram" size={18} />Instagram</span></p>
         <h1 className="text-4xl sm:text-5xl font-black text-white">Buy Instagram Followers</h1>
         <p className="max-w-3xl mx-auto text-[#9CA3AF] text-base sm:text-lg">
           Boost your Instagram credibility with affordable followers from BOASTLIB. Instant delivery, secure checkout, and proven service.

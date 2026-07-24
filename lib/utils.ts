@@ -59,6 +59,7 @@ export function calculateCharge(ratePerK?: number | null, quantity?: number | nu
 }
 
 export function getPlatformIcon(platform: string): string {
+  // Deprecated: prefer using PlatformIcon from lib/platformIcons.tsx in React components
   const icons: Record<string, string> = {
     instagram: '📷', tiktok: '🎵', youtube: '▶️',
     facebook: '👥', twitter: '𝕏', telegram: '✈️',

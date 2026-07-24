@@ -3,11 +3,13 @@ export const metadata = {
   description: 'Buy TikTok likes cheaply and increase your social proof fast with BOASTLIB. Instant service and low-cost delivery.',
 }
 
+import PlatformIcon from '@/lib/platformIcons'
+
 export default function TikTokLikesPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 py-16 px-4">
       <div className="space-y-4 text-center">
-        <p className="text-sm text-green-400 uppercase tracking-[0.3em]">TikTok</p>
+        <p className="text-sm text-green-400 uppercase tracking-[0.3em]"><span className="inline-flex items-center gap-2"><PlatformIcon platform="tiktok" size={18} />TikTok</span></p>
         <h1 className="text-4xl sm:text-5xl font-black text-white">Buy TikTok Likes</h1>
         <p className="max-w-3xl mx-auto text-[#9CA3AF] text-base sm:text-lg">
           Grow your TikTok videos with affordable likes from BOASTLIB. Fast delivery and no-risk checkout for creators and marketers.

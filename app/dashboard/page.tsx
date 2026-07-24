@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import api from '@/lib/api'
-import { formatCurrency, formatDateTime, getGreeting, getPlatformIcon } from '@/lib/utils'
+import { formatCurrency, formatDateTime, getGreeting } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 import { STATUS_CONFIG } from '@/types'
 
 export default function DashboardPage() {
@@ -79,7 +80,7 @@ export default function DashboardPage() {
           {['instagram', 'tiktok', 'youtube', 'facebook', 'twitter', 'telegram', 'spotify', 'discord'].map(p => (
             <Link key={p} href={`/dashboard/order?platform=${p}`}
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-[#1F1F3A] hover:bg-[#2D2D50] transition-colors">
-              <span className="text-xl">{getPlatformIcon(p)}</span>
+              <span className="text-xl"><PlatformIcon platform={p} size={20} /></span>
               <span className="text-[9px] text-[#9CA3AF] capitalize">{p}</span>
             </Link>
           ))}
@@ -105,7 +106,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {recentOrders.map(order => (
                 <div key={order.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#1F1F3A]">
-                  <span className="text-lg">{getPlatformIcon(order.platform)}</span>
+                  <span className="text-lg"><PlatformIcon platform={order.platform} size={18} /></span>
                   <div className="flex-1 min-w-0">
                     <div className="text-white text-sm font-medium truncate">{order.service_name}</div>
                     <div className="text-[#6B7280] text-xs">#{order.order_number} · {formatCurrency(order.charge)}</div>

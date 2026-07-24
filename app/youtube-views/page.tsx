@@ -3,11 +3,13 @@ export const metadata = {
   description: 'Buy YouTube views for your videos with BOASTLIB. Affordable, fast, and reliable delivery for YouTube growth.',
 }
 
+import PlatformIcon from '@/lib/platformIcons'
+
 export default function YouTubeViewsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 py-16 px-4">
       <div className="space-y-4 text-center">
-        <p className="text-sm text-green-400 uppercase tracking-[0.3em]">YouTube</p>
+        <p className="text-sm text-green-400 uppercase tracking-[0.3em]"><span className="inline-flex items-center gap-2"><PlatformIcon platform="youtube" size={18} />YouTube</span></p>
         <h1 className="text-4xl sm:text-5xl font-black text-white">Buy YouTube Views</h1>
         <p className="max-w-3xl mx-auto text-[#9CA3AF] text-base sm:text-lg">
           Increase your YouTube video reach with cheap views, reliable delivery, and automatic progress tracking from BOASTLIB.

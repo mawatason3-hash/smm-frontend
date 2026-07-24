@@ -1,8 +1,11 @@
-'use client'
+"use client"
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { PLATFORM_ICONS } from '@/lib/platformIcons'
 import PWAInstallButton from '@/components/PWAInstallButton'
 import { PLATFORMS } from '@/types'
+import PlatformIcon from '@/lib/platformIcons'
 
 const LIVE_COUNT_START = 522
 
@@ -146,12 +149,12 @@ export default function LandingPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                 {[
-                  { label: 'Instagram Followers', href: '/instagram-followers', icon: '📸' },
-                  { label: 'TikTok Likes', href: '/tiktok-likes', icon: '🎵' },
-                  { label: 'YouTube Views', href: '/youtube-views', icon: '▶️' },
+                  { label: 'Instagram Followers', href: '/instagram-followers', platform: 'instagram' },
+                  { label: 'TikTok Likes', href: '/tiktok-likes', platform: 'tiktok' },
+                  { label: 'YouTube Views', href: '/youtube-views', platform: 'youtube' },
                 ].map(item => (
                   <Link key={item.label} href={item.href} className="inline-flex items-center gap-2 rounded-full border border-[#2D2D50] bg-white/5 px-4 py-3 text-sm font-semibold text-[#E5E7EB] hover:border-[#3B82F6] hover:bg-[#111827] transition-all">
-                    <span>{item.icon}</span>
+                    <span className="flex items-center justify-center w-5 h-5"><PlatformIcon platform={item.platform} size={16} /></span>
                     <span>{item.label}</span>
                   </Link>
                 ))}
@@ -165,14 +168,18 @@ export default function LandingPage() {
               <div className="card p-6">
                 <div className="text-xs text-[#6B7280] font-semibold mb-4 uppercase tracking-wider">Supported Platforms</div>
                 <div className="grid grid-cols-4 gap-3">
-                  {PLATFORMS.map(p => (
-                    <div key={p.id} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-[#1F1F3A] hover:bg-[#2D2D50] transition-colors cursor-default">
-                      <div className="w-14 h-14 rounded-3xl bg-[#101025] flex items-center justify-center">
-                        <img src={p.logoUrl} alt={p.name} className="h-8 w-8 object-contain" />
+                  {PLATFORMS.map(p => {
+                    const cfg = (PLATFORM_ICONS as any)[p.id]
+                    const Icon = cfg?.icon
+                    return (
+                      <div key={p.id} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-[#1F1F3A] hover:bg-[#2D2D50] transition-colors cursor-default">
+                        <div className="w-14 h-14 rounded-3xl flex items-center justify-center" style={{ background: cfg?.bgGlow || '#101025' }}>
+                          {Icon ? <Icon size={28} color={cfg.color} /> : <PlatformIcon platform={p.id} size={28} />}
+                        </div>
+                        <span className="text-[10px] text-[#9CA3AF] font-medium text-center leading-tight">{p.name}</span>
                       </div>
-                      <span className="text-[10px] text-[#9CA3AF] font-medium text-center leading-tight">{p.name}</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 <div className="mt-4 p-3 rounded-xl bg-[#1F1F3A] border border-green-500/20">
                   <div className="flex items-center justify-between text-sm">
@@ -202,14 +209,29 @@ export default function LandingPage() {
             <p className="text-[#9CA3AF]">1,049+ services across every major social media platform</p>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
-            {PLATFORMS.map(p => (
-              <div key={p.id} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-[#16162D] border border-[#2D2D50] hover:border-[#3B82F6]/50 transition-all hover:-translate-y-1 cursor-default">
-                <div className="w-12 h-12 rounded-3xl bg-[#0F1124] flex items-center justify-center">
-                  <img src={p.logoUrl} alt={p.name} className="h-7 w-7 object-contain" />
-                </div>
-                <span className="text-xs text-[#9CA3AF] font-medium text-center">{p.name}</span>
-              </div>
-            ))}
+            {['instagram','tiktok','youtube','facebook','twitter','telegram','spotify','discord'].map((key, i) => {
+              const cfg = (PLATFORM_ICONS as any)[key]
+              const Icon = cfg?.icon
+              const color = cfg?.color
+              const bgGlow = cfg?.bgGlow
+              const label = key === 'twitter' ? 'Twitter X' : key.charAt(0).toUpperCase() + key.slice(1)
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.36, delay: i * 0.06 }}
+                  whileHover={{ scale: 1.06, y: -4 }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-[#16162D] border border-[#2D2D50] hover:border-[#3B82F6]/50 transition-all cursor-default"
+                >
+                  <div className="w-12 h-12 rounded-3xl flex items-center justify-center" style={{ background: bgGlow }}>
+                    {Icon ? <Icon size={20} color={color} /> : <PlatformIcon platform={key} size={20} />}
+                  </div>
+                  <span className="text-xs text-[#9CA3AF] font-medium text-center">{label}</span>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>

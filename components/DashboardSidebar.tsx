@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 import PWAInstallButton from './PWAInstallButton'
 
 const USER_NAV = [
@@ -30,12 +31,14 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
 
-  const NavLink = ({ href, label, icon, className = '' }: { href: string; label: string; icon: string; className?: string }) => {
+    const NavLink = ({ href, label, icon, className = '' }: { href: string; label: string; icon: string; className?: string }) => {
     const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
     return (
       <Link href={href} onClick={onClose}
         className={`sidebar-link ${active ? 'active' : ''} ${className}`}>
-        <span className="text-base w-5 text-center">{icon}</span>
+        <span className="text-base w-5 text-center">
+          {typeof icon === 'string' && icon.length <= 2 ? icon : icon}
+        </span>
         <span>{label}</span>
       </Link>
     )

@@ -5,7 +5,8 @@ import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { PLATFORMS, Service } from '@/types'
-import { formatCurrency, calculateCharge, getPlatformIcon, debounce } from '@/lib/utils'
+import { formatCurrency, calculateCharge, debounce } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 
 function OrderPageContent() {
   const searchParams = useSearchParams()
@@ -98,7 +99,7 @@ function OrderPageContent() {
                     ${selectedPlatform === p.id
                       ? 'border-[#3B82F6] bg-blue-500/10'
                       : 'border-[#2D2D50] bg-[#1F1F3A] hover:border-[#3B82F6]/50'}`}>
-                  <span className="text-2xl">{p.icon}</span>
+                  <span className="text-2xl"><PlatformIcon platform={p.id} size={28} /></span>
                   <span className="text-xs text-[#9CA3AF] font-medium">{p.name}</span>
                   {selectedPlatform === p.id && <div className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />}
                 </button>

@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
-import { formatCurrency, formatDateTime, getPlatformIcon, truncateLink } from '@/lib/utils'
+import { formatCurrency, formatDateTime, truncateLink } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 import { STATUS_CONFIG, PLATFORMS } from '@/types'
 
 export default function OrdersPage() {
@@ -102,7 +103,7 @@ export default function OrdersPage() {
                   <td className="px-4 py-3 text-[#3B82F6] font-mono font-bold">#{order.order_number}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span>{getPlatformIcon(order.platform)}</span>
+                      <span className="text-lg"><PlatformIcon platform={order.platform} size={18} /></span>
                       <span className="text-white font-medium max-w-[140px] truncate">{order.service_name}</span>
                     </div>
                   </td>

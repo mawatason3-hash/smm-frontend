@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { PLATFORMS } from '@/types'
+import PlatformIcon from '@/lib/platformIcons'
 
 export default function AdminServicesPage() {
   const { showToast } = useToast()
@@ -99,12 +100,12 @@ export default function AdminServicesPage() {
             </button>
           ))}
         </div>
-        <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1 flex-wrap">
           {PLATFORMS.map(p => (
             <button key={p.id} onClick={() => setPlatformFilter(platformFilter === p.id ? '' : p.id)}
               className={`w-9 h-9 rounded-lg border flex items-center justify-center text-base transition-all
                 ${platformFilter === p.id ? 'border-[#3B82F6] bg-blue-500/10' : 'border-[#2D2D50] bg-[#1F1F3A]'}`}
-              title={p.name}>{p.icon}</button>
+              title={p.name}><PlatformIcon platform={p.id} size={18} /></button>
           ))}
         </div>
       </div>

@@ -4,7 +4,8 @@ import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { PLATFORMS, Service } from '@/types'
-import { formatCurrency, calculateCharge, getPlatformIcon } from '@/lib/utils'
+import { formatCurrency, calculateCharge } from '@/lib/utils'
+import PlatformIcon from '@/lib/platformIcons'
 
 export default function AdminPowerPage() {
   const { user, refreshUser } = useAuth()
@@ -225,7 +226,7 @@ export default function AdminPowerPage() {
                 {history.map(order => (
                   <tr key={order.id} className="table-row">
                     <td className="px-3 py-3 text-[#6B7280] text-xs">{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td className="px-3 py-3"><span className="text-lg">{getPlatformIcon(order.platform)}</span></td>
+                    <td className="px-3 py-3"><span className="text-lg"><PlatformIcon platform={order.platform} size={18} /></span></td>
                     <td className="px-3 py-3 text-white text-xs max-w-[120px] truncate">{order.service_name}</td>
                     <td className="px-3 py-3 text-[#9CA3AF] text-xs max-w-[120px] truncate">{order.link}</td>
                     <td className="px-3 py-3 text-white">{order.quantity.toLocaleString()}</td>
