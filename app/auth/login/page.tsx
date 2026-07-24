@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 
@@ -10,32 +10,49 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { user, isLoading, login } = useAuth()
+  const { login, isAuthenticated, isLoading, user } = useAuth()
   const { showToast } = useToast()
-  const router = useRouter()
 
   useEffect(() => {
-    console.debug('LoginPage redirect check', { isLoading, user })
-    if (!isLoading && user) {
-      console.debug('LoginPage: user present, redirecting to /')
-      router.push('/')
+    if (!isLoading && isAuthenticated && user) {
+      if (user.role === 'super_admin' || user.role === 'admin') {
+        window.location.href = '/admin'
+      } else {
+        window.location.href = '/dashboard'
+      }
     }
-  }, [isLoading, user, router])
+  }, [isAuthenticated, isLoading, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!email || !password) {
+      showToast('Please fill in all fields', 'error')
+      return
+    }
+
     setLoading(true)
     try {
       await login(email, password)
-      // AuthContext handles redirect based on role
-      // This is a fallback in case it doesn't work
-      showToast('Welcome back! 👋', 'success')
     } catch (err: any) {
-      showToast(err?.response?.data?.detail || 'Invalid credentials', 'error')
-    } finally {
+      const message =
+        err?.response?.data?.detail ||
+        err?.message ||
+        'Invalid email or password'
+      showToast(message, 'error')
       setLoading(false)
     }
   }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B0B1A' }}>
+        <div className="w-10 h-10 rounded-xl animate-pulse" style={{ background: 'linear-gradient(135deg, #3B82F6, #7C3AED)' }} />
+      </div>
+    )
+  }
+
+  if (isAuthenticated) return null
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0B0B1A' }}>
@@ -45,10 +62,10 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative">
-        {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center">
-            <img src="/logo.png" alt="BOASTLIB" className="h-12 w-12 object-contain" />
+          <Link href="/" className="inline-flex items-center gap-2">
+            <Image src="/logo.png" alt="BOASTLIB" width={42} height={42} className="rounded-xl" />
+            <span className="font-black text-white text-xl">BOASTLIB</span>
           </Link>
           <p className="text-[#6B7280] text-sm mt-2">SMM Panel — Cheapest prices, fastest delivery</p>
         </div>
@@ -60,8 +77,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#9CA3AF] mb-1.5">Email Address</label>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                className="input" placeholder="you@example.com" />
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="input" placeholder="you@example.com" autoComplete="email" disabled={loading} />
             </div>
 
             <div>
@@ -70,17 +86,22 @@ export default function LoginPage() {
                 <Link href="/auth/forgot-password" className="text-xs text-[#3B82F6] hover:underline">Forgot password?</Link>
               </div>
               <div className="relative">
-                <input type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)}
-                  className="input pr-12" placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white text-sm">
+                <input type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="input pr-12" placeholder="••••••••" autoComplete="current-password" disabled={loading} />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white text-sm">
                   {showPass ? '🙈' : '👁️'}
                 </button>
               </div>
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 text-base">
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Logging in...
+                </span>
+              ) : (
+                'Login'
+              )}
             </button>
           </form>
 

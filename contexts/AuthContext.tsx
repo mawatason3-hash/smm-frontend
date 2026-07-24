@@ -1,5 +1,13 @@
 'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  ReactNode
+} from 'react'
 import api from '@/lib/api'
 import { User } from '@/types'
 
@@ -9,7 +17,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
-  logout: () => Promise<void>
+  logout: () => void
   refreshUser: () => Promise<void>
 }
 
@@ -27,95 +35,130 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const isMounted = useRef(true)
 
-  const fetchUser = async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
+  const clearAuthData = useCallback(() => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    delete api.defaults.headers.common['Authorization']
+    if (isMounted.current) {
+      setUser(null)
+    }
+  }, [])
+
+  const fetchUser = useCallback(async () => {
+    const token = localStorage.getItem('access_token')
+
+    if (!token) {
+      if (isMounted.current) {
         setUser(null)
         setIsLoading(false)
-        return
       }
+      return
+    }
 
+    try {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       const res = await api.get('/api/auth/me')
-      // Ensure response has required user fields
-      if (res.data && typeof res.data === 'object' && 'id' in res.data && 'email' in res.data) {
-        setUser(res.data as User)
-      } else {
-        setUser(null)
+      if (isMounted.current) {
+        setUser(res.data)
       }
     } catch (error: any) {
       if (error?.response?.status === 401) {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        clearAuthData()
       }
-      setUser(null)
     } finally {
-      setIsLoading(false)
+      if (isMounted.current) {
+        setIsLoading(false)
+      }
     }
-  }
+  }, [clearAuthData])
 
-  useEffect(() => { fetchUser() }, [])
+  useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
 
-  const login = async (email: string, password: string) => {
-    const res = await api.post('/api/auth/login', { email, password })
-    localStorage.setItem('access_token', res.data.access_token)
-    localStorage.setItem('refresh_token', res.data.refresh_token)
+  const login = useCallback(async (email: string, password: string) => {
+    clearAuthData()
 
-    // Fetch user data and check role
+    const res = await api.post('/api/auth/login', {
+      email,
+      password
+    })
+
+    const { access_token, refresh_token } = res.data
+
+    localStorage.setItem('access_token', access_token)
+    localStorage.setItem('refresh_token', refresh_token)
+    api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
+
     const userRes = await api.get('/api/auth/me')
     const userData = userRes.data
-    
-    // Validate user data
-    if (!userData || typeof userData !== 'object' || !('id' in userData) || !('email' in userData)) {
-      throw new Error('Invalid user data received')
-    }
-    
-    setUser(userData as User)
 
-    if (userData.role !== 'super_admin' && userData.role !== 'admin') {
-      const alreadySeen = localStorage.getItem('install_prompt_shown') === 'true'
-      const nav = window.navigator as any
-      const installed = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true
-      if (!alreadySeen && !installed) {
-        localStorage.setItem('install_prompt_pending', 'true')
-      }
+    if (isMounted.current) {
+      setUser(userData)
     }
 
-    // Redirect based on role
     if (userData.role === 'super_admin' || userData.role === 'admin') {
       window.location.href = '/admin'
     } else {
       window.location.href = '/dashboard'
     }
-  }
+  }, [clearAuthData])
 
-  const register = async (data: RegisterData) => {
+  const register = useCallback(async (data: RegisterData) => {
+    clearAuthData()
+
     const res = await api.post('/api/auth/register', data)
-    localStorage.setItem('access_token', res.data.access_token)
-    localStorage.setItem('refresh_token', res.data.refresh_token)
-    await fetchUser()
-  }
+    const { access_token, refresh_token } = res.data
 
-  const logout = async () => {
-    try {
-      const refreshToken = localStorage.getItem('refresh_token')
-      if (refreshToken) await api.post('/api/auth/logout', { refresh_token: refreshToken })
-    } catch {}
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    setUser(null)
+    localStorage.setItem('access_token', access_token)
+    localStorage.setItem('refresh_token', refresh_token)
+    api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
+
+    const userRes = await api.get('/api/auth/me')
+    if (isMounted.current) {
+      setUser(userRes.data)
+    }
+
+    window.location.href = '/dashboard'
+  }, [clearAuthData])
+
+  const logout = useCallback(() => {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (refreshToken) {
+      api.post('/api/auth/logout', {
+        refresh_token: refreshToken
+      }).catch(() => {})
+    }
+
+    clearAuthData()
     window.location.href = '/auth/login'
-  }
+  }, [clearAuthData])
 
-  const refreshUser = async () => { await fetchUser() }
+  const refreshUser = useCallback(async () => {
+    await fetchUser()
+  }, [fetchUser])
 
   return (
-    <AuthContext.Provider value={{
-      user, isLoading,
-      isAuthenticated: !!user,
-      login, register, logout, refreshUser
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        register,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
