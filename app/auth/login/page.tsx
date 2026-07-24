@@ -15,7 +15,9 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
+    console.debug('LoginPage redirect check', { isLoading, user })
     if (!isLoading && user) {
+      console.debug('LoginPage: user present, redirecting to /')
       router.push('/')
     }
   }, [isLoading, user, router])

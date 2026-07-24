@@ -19,7 +19,9 @@ function RegisterForm() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    console.debug('RegisterPage redirect check', { isLoading, user })
     if (!isLoading && user) {
+      console.debug('RegisterPage: user present, redirecting to /')
       router.push('/')
     }
   }, [isLoading, user, router])
