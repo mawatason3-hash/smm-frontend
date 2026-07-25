@@ -17,6 +17,10 @@ export default function AdminServicesPage() {
   const [showModal, setShowModal] = useState(false)
   const [editService, setEditService] = useState<any | null>(null)
   const [syncing, setSyncing] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [showProviderTools, setShowProviderTools] = useState(false)
+  const [providerTool, setProviderTool] = useState('jap')
+  const [providerToolAction, setProviderToolAction] = useState<'activate' | 'deactivate' | 'delete'>('deactivate')
   const [form, setForm] = useState({
     platform: '', name: '', rate_per_1k: '', cost_per_1k: '',
     min_qty: '100', max_qty: '100000', provider: '', provider_service_id: '',
@@ -73,6 +77,51 @@ export default function AdminServicesPage() {
     finally { setSyncing(false) }
   }
 
+  const toggleSelected = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id])
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === services.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(services.map(svc => svc.id))
+    }
+  }
+
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
+    if (action === 'delete' && !confirm(`Delete ${selectedIds.length} services? This cannot be undone.`)) return
+
+    try {
+      const res = await api.post('/api/admin/services/bulk-action', {
+        action,
+        service_ids: selectedIds,
+      })
+      showToast(res.data.message, 'success')
+      setSelectedIds([])
+      load()
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || 'Bulk action failed', 'error')
+    }
+  }
+
+  const handleProviderToolAction = async () => {
+    const confirmMessage = `This will ${providerToolAction} ALL services from ${providerTool === 'all' ? 'all providers' : providerTool}. Are you sure?`
+    if (!confirm(confirmMessage)) return
+
+    try {
+      const res = await api.post('/api/admin/services/bulk-action', {
+        action: providerToolAction,
+        provider: providerTool,
+      })
+      showToast(res.data.message, 'success')
+      setShowProviderTools(false)
+      load()
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || 'Provider action failed', 'error')
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-5 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -85,6 +134,7 @@ export default function AdminServicesPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#3B82F6]/50 text-[#3B82F6] hover:bg-blue-500/10 text-sm transition-colors disabled:opacity-50">
             🔄 {syncing ? 'Syncing...' : 'Sync from JAP'}
           </button>
+          <button onClick={() => setShowProviderTools(true)} className="px-4 py-2 rounded-xl border border-[#2D2D50] bg-[#1F1F3A] text-[#9CA3AF] hover:text-white text-sm">🔧 Provider Tools</button>
           <button onClick={openCreate} className="btn-primary text-sm px-5 py-2.5">+ Add Service</button>
         </div>
       </div>
@@ -110,12 +160,29 @@ export default function AdminServicesPage() {
         </div>
       </div>
 
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between p-4 rounded-xl mb-4" style={{ background: '#16162D', border: '1px solid #3B82F6' }}>
+          <span className="text-white text-sm font-medium">
+            {selectedIds.length} service{selectedIds.length > 1 ? 's' : ''} selected
+          </span>
+          <div className="flex gap-2">
+            <button onClick={() => handleBulkAction('activate')} className="btn-primary text-xs px-4 py-2">✅ Activate</button>
+            <button onClick={() => handleBulkAction('deactivate')} className="text-xs px-4 py-2 rounded-lg bg-[#1F1F3A] text-white border border-[#2D2D50]">⏸️ Deactivate</button>
+            <button onClick={() => handleBulkAction('delete')} className="text-xs px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/40">🗑️ Delete</button>
+            <button onClick={() => setSelectedIds([])} className="text-xs px-4 py-2 text-[#6B7280]">Clear</button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="card p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#2D2D50]">
+                <th className="px-3 py-3 text-left">
+                  <input type="checkbox" checked={services.length > 0 && selectedIds.length === services.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-[#2D2D50] bg-[#1F1F3A]" />
+                </th>
                 {['Platform', 'Service Name', 'Rate/1K', 'Cost/1K', 'Min', 'Max', 'Provider', 'Speed', 'Status', 'Actions'].map(h => (
                   <th key={h} className="text-left text-[#6B7280] font-semibold px-3 py-3 text-xs uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
@@ -126,6 +193,9 @@ export default function AdminServicesPage() {
                 <tr><td colSpan={10} className="text-center text-[#6B7280] py-12">Loading...</td></tr>
               ) : services.map(svc => (
                 <tr key={svc.id} className="table-row">
+                  <td className="px-3 py-3">
+                    <input type="checkbox" checked={selectedIds.includes(svc.id)} onChange={() => toggleSelected(svc.id)} className="h-4 w-4 rounded border-[#2D2D50] bg-[#1F1F3A]" />
+                  </td>
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-1.5">
                       <span className="text-base">{PLATFORMS.find(p => p.id === svc.platform)?.icon || '🌐'}</span>
@@ -165,6 +235,38 @@ export default function AdminServicesPage() {
           <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-xl bg-[#1F1F3A] border border-[#2D2D50] text-white disabled:opacity-40 text-sm">← Prev</button>
           <span className="px-4 py-2 text-[#9CA3AF] text-sm">Page {page}</span>
           <button disabled={page >= Math.ceil(total / 30)} onClick={() => setPage(p => p + 1)} className="px-4 py-2 rounded-xl bg-[#1F1F3A] border border-[#2D2D50] text-white disabled:opacity-40 text-sm">Next →</button>
+        </div>
+      )}
+
+      {showProviderTools && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#2D2D50] p-6" style={{ background: '#16162D' }}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-white font-bold text-lg">Provider Tools</h2>
+              <button onClick={() => setShowProviderTools(false)} className="text-[#6B7280] hover:text-white text-xl">×</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">Provider</label>
+                <select value={providerTool} onChange={e => setProviderTool(e.target.value)} className="input" style={{ appearance: 'none' }}>
+                  <option value="jap">JAP</option>
+                  <option value="smmwiz">SMMWiz</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">Action</label>
+                <select value={providerToolAction} onChange={e => setProviderToolAction(e.target.value as any)} className="input" style={{ appearance: 'none' }}>
+                  <option value="activate">Activate All</option>
+                  <option value="deactivate">Deactivate All</option>
+                  <option value="delete">Delete All</option>
+                </select>
+              </div>
+              <button onClick={handleProviderToolAction} className={`w-full py-3 rounded-xl text-sm font-medium ${providerToolAction === 'delete' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'btn-primary'}`}>
+                {providerToolAction === 'activate' ? '✅ Activate All' : providerToolAction === 'deactivate' ? '⏸️ Deactivate All' : '🗑️ Delete All'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
