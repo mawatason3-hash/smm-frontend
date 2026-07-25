@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PLATFORM_ICONS } from '@/lib/platformIcons'
 import PWAInstallButton from '@/components/PWAInstallButton'
+import InstallPromptModal from '@/components/InstallPromptModal'
+import { useInstallPrompt } from '@/components/useInstallPrompt'
 import { PLATFORMS } from '@/types'
 import PlatformIcon from '@/lib/platformIcons'
 
@@ -21,6 +23,8 @@ const FEATURES = [
 export default function LandingPage() {
   const [liveCount, setLiveCount] = useState(LIVE_COUNT_START)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [showHomeInstallModal, setShowHomeInstallModal] = useState(false)
+  const { deferredPrompt, isInstalled, isIOS, handlePromptInstall } = useInstallPrompt()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,6 +33,32 @@ export default function LandingPage() {
 
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isInstalled) return
+    if (window.location.pathname !== '/') return
+
+    const lastShown = Number(window.localStorage.getItem('install_prompt_last_shown') || '0')
+    const now = Date.now()
+    const delayMs = 10_000
+    const retryWindowMs = 10 * 60 * 1000
+
+    if (now - lastShown < retryWindowMs) return
+
+    const timer = window.setTimeout(() => {
+      window.localStorage.setItem('install_prompt_last_shown', String(Date.now()))
+      setShowHomeInstallModal(true)
+    }, delayMs)
+
+    return () => window.clearTimeout(timer)
+  }, [isInstalled])
+
+  const handleHomeInstall = async () => {
+    if (deferredPrompt) {
+      await handlePromptInstall()
+    }
+    setShowHomeInstallModal(false)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B1A' }}>
@@ -200,6 +230,15 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <InstallPromptModal
+        isOpen={showHomeInstallModal}
+        onClose={() => setShowHomeInstallModal(false)}
+        isInstalled={isInstalled}
+        isIOS={isIOS}
+        deferredPrompt={deferredPrompt}
+        onInstall={handleHomeInstall}
+      />
 
       {/* Platforms */}
       <section id="services" className="py-16 px-4 border-t border-[#2D2D50]/40">

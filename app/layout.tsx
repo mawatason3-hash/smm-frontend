@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import ClientLayout from './ClientLayout'
+import { InstallPromptProvider } from '@/components/useInstallPrompt'
 
 export const metadata: Metadata = {
   title: 'BOASTLIB — Cheapest SMM Panel | Buy Instagram, TikTok, YouTube Followers',
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
-        <ClientLayout>{children}</ClientLayout>
+        <InstallPromptProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </InstallPromptProvider>
       </body>
     </html>
   )
