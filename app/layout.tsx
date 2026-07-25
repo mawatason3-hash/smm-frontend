@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { ToastProvider } from '@/contexts/ToastContext'
+import ClientLayout from './ClientLayout'
 
 export const metadata: Metadata = {
   title: 'BOASTLIB — Cheapest SMM Panel | Buy Instagram, TikTok, YouTube Followers',
@@ -57,11 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )
