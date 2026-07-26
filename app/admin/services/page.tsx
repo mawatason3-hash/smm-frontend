@@ -13,6 +13,7 @@ export default function AdminServicesPage() {
   const [search, setSearch] = useState('')
   const [platformFilter, setPlatformFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('active')
+  const [recommendedOnly, setRecommendedOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editService, setEditService] = useState<any | null>(null)
@@ -25,7 +26,7 @@ export default function AdminServicesPage() {
     platform: '', name: '', rate_per_1k: '', cost_per_1k: '',
     min_qty: '100', max_qty: '100000', provider: '', provider_service_id: '',
     avg_speed: '1-2 hours', is_instant: false, refill_enabled: false,
-    cancel_enabled: false, is_active: true, description: '', quality_badge: ''
+    cancel_enabled: false, is_active: true, is_recommended: false, description: '', quality_badge: ''
   })
 
   const load = async () => {
@@ -35,20 +36,21 @@ export default function AdminServicesPage() {
       if (search) params.set('search', search)
       if (platformFilter) params.set('platform', platformFilter)
       if (statusFilter) params.set('status', statusFilter)
+      if (recommendedOnly) params.set('recommended', 'true')
       const res = await api.get(`/api/services/admin/all?${params}`)
       setServices(res.data.items)
       setTotal(res.data.total)
     } catch {} finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [page, platformFilter, statusFilter])
+  useEffect(() => { load() }, [page, platformFilter, statusFilter, recommendedOnly])
   useEffect(() => { const t = setTimeout(load, 400); return () => clearTimeout(t) }, [search])
 
-  const openCreate = () => { setEditService(null); setForm({ platform: '', name: '', rate_per_1k: '', cost_per_1k: '', min_qty: '100', max_qty: '100000', provider: '', provider_service_id: '', avg_speed: '1-2 hours', is_instant: false, refill_enabled: false, cancel_enabled: false, is_active: true, description: '', quality_badge: '' }); setShowModal(true) }
+  const openCreate = () => { setEditService(null); setForm({ platform: '', name: '', rate_per_1k: '', cost_per_1k: '', min_qty: '100', max_qty: '100000', provider: '', provider_service_id: '', avg_speed: '1-2 hours', is_instant: false, refill_enabled: false, cancel_enabled: false, is_active: true, is_recommended: false, description: '', quality_badge: '' }); setShowModal(true) }
 
   const openEdit = (svc: any) => {
     setEditService(svc)
-    setForm({ platform: svc.platform, name: svc.name, rate_per_1k: String(svc.rate_per_1k), cost_per_1k: String(svc.cost_per_1k || ''), min_qty: String(svc.min_qty), max_qty: String(svc.max_qty), provider: svc.provider || '', provider_service_id: svc.provider_service_id || '', avg_speed: svc.avg_speed || '', is_instant: svc.is_instant, refill_enabled: svc.refill_enabled, cancel_enabled: svc.cancel_enabled, is_active: svc.is_active, description: svc.description || '', quality_badge: svc.quality_badge || '' })
+    setForm({ platform: svc.platform, name: svc.name, rate_per_1k: String(svc.rate_per_1k), cost_per_1k: String(svc.cost_per_1k || ''), min_qty: String(svc.min_qty), max_qty: String(svc.max_qty), provider: svc.provider || '', provider_service_id: svc.provider_service_id || '', avg_speed: svc.avg_speed || '', is_instant: svc.is_instant, refill_enabled: svc.refill_enabled, cancel_enabled: svc.cancel_enabled, is_active: svc.is_active, is_recommended: svc.is_recommended || false, description: svc.description || '', quality_badge: svc.quality_badge || '' })
     setShowModal(true)
   }
 
@@ -140,7 +142,7 @@ export default function AdminServicesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)} className="input max-w-xs" placeholder="Search services..." />
         <div className="flex gap-1 bg-[#1F1F3A] rounded-xl p-1">
           {['active', 'inactive', ''].map(s => (
@@ -150,6 +152,10 @@ export default function AdminServicesPage() {
             </button>
           ))}
         </div>
+        <button onClick={() => setRecommendedOnly(!recommendedOnly)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${recommendedOnly ? 'bg-[#3B82F6] text-white' : 'text-[#9CA3AF] hover:text-white bg-[#1F1F3A]'}`}>
+          ⭐ Recommended
+        </button>
           <div className="flex gap-1 flex-wrap">
           {PLATFORMS.map(p => (
             <button key={p.id} onClick={() => setPlatformFilter(platformFilter === p.id ? '' : p.id)}
@@ -212,9 +218,12 @@ export default function AdminServicesPage() {
                   </td>
                   <td className="px-3 py-3 text-[#9CA3AF] text-xs">{svc.avg_speed || '—'}</td>
                   <td className="px-3 py-3">
-                    <span className={`badge ${svc.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                      {svc.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      <span className={`badge ${svc.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                        {svc.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      {svc.is_recommended && <span className="badge bg-yellow-500/20 text-yellow-400">⭐ Recommended</span>}
+                    </div>
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex gap-1.5">
@@ -337,6 +346,7 @@ export default function AdminServicesPage() {
                   { key: 'refill_enabled', label: '🔄 Refill enabled' },
                   { key: 'cancel_enabled', label: '✕ Cancel enabled' },
                   { key: 'is_active', label: '✅ Active' },
+                  { key: 'is_recommended', label: '⭐ Recommended' },
                 ].map(toggle => (
                   <label key={toggle.key} className="flex items-center gap-2 cursor-pointer">
                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${(form as any)[toggle.key] ? 'bg-[#3B82F6] border-[#3B82F6]' : 'border-[#2D2D50]'}`}

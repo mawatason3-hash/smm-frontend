@@ -1,74 +1,141 @@
-import struct
-import zlib
+#!/usr/bin/env python3
+"""Generate PWA icons from the BOASTLIB logo."""
+
+from PIL import Image, ImageDraw
+import os
 from pathlib import Path
 
-root = Path(__file__).resolve().parent.parent / "public" / "icons"
-root.mkdir(parents=True, exist_ok=True)
+def create_pwa_icon(source_logo_path, output_path, size, with_padding=False):
+    """
+    Create a PWA icon by scaling and potentially adding padding.
+    
+    Args:
+        source_logo_path: Path to source logo
+        output_path: Where to save the icon
+        size: Output size (e.g., 192, 512)
+        with_padding: If True, add 20% padding for maskable icons
+    """
+    try:
+        # Open the source image
+        img = Image.open(source_logo_path)
+        
+        # Convert to RGBA for consistent handling
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
+        
+        # Create transparent background for web icons
+        background = Image.new('RGBA', (size, size), (255, 255, 255, 0))
+        
+        if with_padding:
+            # For maskable icons: add 20% padding (safe zone is inner 80%)
+            # So we scale logo to 80% of the final size
+            logo_size = int(size * 0.8)
+            padding = (size - logo_size) // 2
+        else:
+            # For regular icons: use 90% of space for better appearance
+            logo_size = int(size * 0.9)
+            padding = (size - logo_size) // 2
+        
+        # Resize the logo with high quality
+        img_resized = img.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
+        
+        # Paste onto transparent background
+        background.paste(img_resized, (padding, padding), img_resized)
+        
+        # Save as PNG with transparency
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        background.save(output_path, 'PNG', quality=95)
+        print(f"✓ Created {output_path}")
+        
+    except Exception as e:
+        print(f"✗ Error creating {output_path}: {e}")
+        raise
 
-colors = {
-    "bg": (11, 11, 26, 255),
-    "blue": (59, 130, 246, 255),
-    "gold": (245, 158, 11, 255),
-    "white": (255, 255, 255, 255),
-}
+def create_apple_touch_icon(source_logo_path, output_path, size=180):
+    """
+    Create Apple touch icon with solid background (iOS ignores alpha).
+    
+    Args:
+        source_logo_path: Path to source logo
+        output_path: Where to save the icon
+        size: Output size (typically 180x180)
+    """
+    try:
+        # Open the source image
+        img = Image.open(source_logo_path)
+        
+        # Convert to RGBA if needed
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
+        
+        # Create solid dark background (BOASTLIB dark: #0B0B1A)
+        background = Image.new('RGB', (size, size), (11, 11, 26))
+        
+        # Use 85% of space for Apple icon
+        logo_size = int(size * 0.85)
+        padding = (size - logo_size) // 2
+        
+        # Resize the logo
+        img_resized = img.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
+        
+        # Convert logo to RGB if it has transparency
+        if img_resized.mode == 'RGBA':
+            # Create a temporary image with white background for paste
+            logo_rgb = Image.new('RGB', img_resized.size, (255, 255, 255))
+            logo_rgb.paste(img_resized, mask=img_resized.split()[3])
+        else:
+            logo_rgb = img_resized.convert('RGB')
+        
+        # Paste onto background
+        background.paste(logo_rgb, (padding, padding))
+        
+        # Save as PNG (no transparency)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        background.save(output_path, 'PNG', quality=95)
+        print(f"✓ Created {output_path}")
+        
+    except Exception as e:
+        print(f"✗ Error creating {output_path}: {e}")
+        raise
 
+def main():
+    """Generate all PWA icons."""
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    logo_path = project_root / 'public' / 'logo.png'
+    icons_dir = project_root / 'public' / 'icons'
+    
+    if not logo_path.exists():
+        print(f"Error: Logo not found at {logo_path}")
+        return False
+    
+    print(f"Using logo: {logo_path}")
+    print(f"Generating icons to: {icons_dir}\n")
+    
+    try:
+        # Regular icons (with transparent background)
+        create_pwa_icon(str(logo_path), str(icons_dir / 'icon-192x192.png'), 192, with_padding=False)
+        create_pwa_icon(str(logo_path), str(icons_dir / 'icon-512x512.png'), 512, with_padding=False)
+        
+        # Maskable icons (with 20% padding for safe zone)
+        create_pwa_icon(str(logo_path), str(icons_dir / 'icon-maskable-192x192.png'), 192, with_padding=True)
+        create_pwa_icon(str(logo_path), str(icons_dir / 'icon-maskable-512x512.png'), 512, with_padding=True)
+        
+        # Apple touch icon (180x180, solid background, no transparency)
+        create_apple_touch_icon(str(logo_path), str(icons_dir / 'apple-touch-icon.png'), size=180)
+        
+        print("\n✓ All PWA icons generated successfully!")
+        print("\n⚠️  Important: PWA icons are cached aggressively by browsers.")
+        print("   On previously installed PWAs, users will need to:")
+        print("   1. Uninstall the app from their device")
+        print("   2. Clear browser cache")
+        print("   3. Reinstall the PWA to see the new icons")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ Failed to generate icons: {e}")
+        return False
 
-def png_chunk(chunk_type, data):
-    chunk = chunk_type + data
-    return struct.pack(">I", len(data)) + chunk + struct.pack(">I", zlib.crc32(chunk) & 0xFFFFFFFF)
-
-
-def write_png(path, pixels, width, height):
-    with open(path, "wb") as f:
-        f.write(b"\x89PNG\r\n\x1a\n")
-        f.write(png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)))
-        raw = b""
-        for row in pixels:
-            raw += b"\x00" + b"".join(bytes(px) for px in row)
-        f.write(png_chunk(b"IDAT", zlib.compress(raw, 9)))
-        f.write(png_chunk(b"IEND", b""))
-
-
-def make_icon(size, padding=0):
-    bg = colors["bg"]
-    blue = colors["blue"]
-    gold = colors["gold"]
-    white = colors["white"]
-    pixels = [[bg for _ in range(size)] for _ in range(size)]
-    cx = cy = size // 2
-    radius_sq = (size * 0.34) ** 2
-
-    for y in range(size):
-        for x in range(size):
-            if padding and (x < padding or x >= size - padding or y < padding or y >= size - padding):
-                continue
-            dx = x - cx
-            dy = y - cy
-            if dx * dx + dy * dy < radius_sq:
-                pixels[y][x] = blue
-            elif ((x + y) % 20) < 6:
-                pixels[y][x] = gold
-
-    for i in range(size // 4, 3 * size // 4):
-        x = i - size // 10
-        y = i
-        if 0 <= x < size:
-            for dx in range(-2, 3):
-                if 0 <= x + dx < size:
-                    pixels[y][x + dx] = white
-
-    return pixels
-
-
-icon_specs = [
-    ("icon-192x192.png", 192, 0),
-    ("icon-512x512.png", 512, 0),
-    ("icon-maskable-192x192.png", 192, 38),
-    ("icon-maskable-512x512.png", 512, 102),
-    ("apple-touch-icon.png", 180, 0),
-]
-
-for filename, size, padding in icon_specs:
-    path = root / filename
-    write_png(path, make_icon(size, padding), size, size)
-    print(f"Created {path}")
+if __name__ == '__main__':
+    success = main()
+    exit(0 if success else 1)
