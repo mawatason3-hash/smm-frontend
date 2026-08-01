@@ -16,28 +16,54 @@ function OrderPageContent() {
 
   const [selectedPlatform, setSelectedPlatform] = useState(searchParams.get('platform') || '')
   const [services, setServices] = useState<Service[]>([])
-  const [filteredServices, setFilteredServices] = useState<Service[]>([])
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [serviceSearch, setServiceSearch] = useState('')
   const [link, setLink] = useState('')
   const [quantity, setQuantity] = useState(100)
   const [placing, setPlacing] = useState(false)
+  const [serviceLoading, setServiceLoading] = useState(false)
+  const [serviceError, setServiceError] = useState<string | null>(null)
+
+  const loadServices = useCallback(debounce(async (platform: string, q: string) => {
+    if (!platform) return
+
+    const query = q.trim()
+    setServiceLoading(true)
+    setServiceError(null)
+
+    try {
+      const params = new URLSearchParams({ platform, limit: '20' })
+      if (query) {
+        params.set('search', query)
+      }
+
+      const res = await api.get(`/api/services?${params.toString()}`)
+      setServices(Array.isArray(res.data) ? res.data : [])
+      setSelectedService(null)
+    } catch (err: any) {
+      setServices([])
+      setServiceError("Couldn't load services, try again")
+    } finally {
+      setServiceLoading(false)
+    }
+  }, 300), [])
 
   useEffect(() => {
-    if (!selectedPlatform) return
-    api.get(`/api/services?platform=${selectedPlatform}&limit=100`).then(res => {
-      setServices(res.data)
-      setFilteredServices(res.data)
+    if (!selectedPlatform) {
+      setServices([])
+      setServiceError(null)
+      return
+    }
+
+    if (!serviceSearch.trim()) {
+      setServices([])
       setSelectedService(null)
-    })
-  }, [selectedPlatform])
+      setServiceError(null)
+      return
+    }
 
-  const filterServices = useCallback(debounce((q: string) => {
-    if (!q) { setFilteredServices(services); return }
-    setFilteredServices(services.filter(s => s.name.toLowerCase().includes(q.toLowerCase())))
-  }, 300), [services])
-
-  useEffect(() => { filterServices(serviceSearch) }, [serviceSearch, services])
+    loadServices(selectedPlatform, serviceSearch)
+  }, [selectedPlatform, serviceSearch, loadServices])
 
   const charge = selectedService ? calculateCharge(selectedService.rate_per_1k, quantity) : 0
   const canAfford = Number(user?.balance || 0) >= charge
@@ -113,10 +139,23 @@ function OrderPageContent() {
               <h2 className="text-white font-bold mb-4">2. Select Service</h2>
               <input type="text" value={serviceSearch} onChange={e => setServiceSearch(e.target.value)}
                 className="input mb-3" placeholder="Search services..." />
+
+              {serviceLoading && (
+                <div className="text-sm text-[#9CA3AF] mb-3">Loading services...</div>
+              )}
+
+              {serviceError && (
+                <div className="text-sm text-red-400 mb-3">{serviceError}</div>
+              )}
+
+              {!serviceSearch.trim() && !serviceLoading && (
+                <div className="text-[#6B7280] text-sm text-center py-6">Type to search services</div>
+              )}
+
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {filteredServices.length === 0 ? (
+                {serviceSearch.trim() && services.length === 0 && !serviceLoading && !serviceError ? (
                   <div className="text-[#6B7280] text-sm text-center py-6">No services found</div>
-                ) : filteredServices.map(svc => (
+                ) : services.map(svc => (
                   <div key={svc.id} onClick={() => { setSelectedService(svc); setQuantity(svc.min_qty) }}
                     className={`p-3 rounded-xl border cursor-pointer transition-all
                       ${selectedService?.id === svc.id
