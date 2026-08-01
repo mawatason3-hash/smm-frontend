@@ -16,6 +16,7 @@ function OrderPageContent() {
 
   const [selectedPlatform, setSelectedPlatform] = useState(searchParams.get('platform') || '')
   const [services, setServices] = useState<Service[]>([])
+  const [serviceCache, setServiceCache] = useState<Record<string, Service[]>>({})
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [serviceSearch, setServiceSearch] = useState('')
   const [link, setLink] = useState('')
@@ -24,7 +25,51 @@ function OrderPageContent() {
   const [serviceLoading, setServiceLoading] = useState(false)
   const [serviceError, setServiceError] = useState<string | null>(null)
 
-  const loadServices = useCallback(debounce(async (platform: string, q: string) => {
+  const loadAllPlatformServices = useCallback(async (platform: string) => {
+    if (!platform) return
+
+    const cachedServices = serviceCache[platform]
+    if (cachedServices && cachedServices.length > 0) {
+      setServices(cachedServices)
+      setSelectedService(null)
+      return
+    }
+
+    setServiceLoading(true)
+    setServiceError(null)
+
+    try {
+      const allServices: Service[] = []
+      const maxPages = 10
+      const pageLimit = 200
+
+      for (let page = 1; page <= maxPages; page++) {
+        const res = await api.get(`/api/services?platform=${platform}&page=${page}&limit=${pageLimit}`)
+        const pageItems = Array.isArray(res.data) ? res.data : []
+
+        if (pageItems.length === 0) {
+          break
+        }
+
+        allServices.push(...pageItems)
+
+        if (pageItems.length < pageLimit) {
+          break
+        }
+      }
+
+      setServiceCache(prev => ({ ...prev, [platform]: allServices }))
+      setServices(allServices)
+      setSelectedService(null)
+    } catch (err: any) {
+      setServices([])
+      setServiceError("Couldn't load services, try again")
+    } finally {
+      setServiceLoading(false)
+    }
+  }, [serviceCache])
+
+  const searchServices = useCallback(debounce(async (platform: string, q: string) => {
     if (!platform) return
 
     const query = q.trim()
@@ -56,14 +101,12 @@ function OrderPageContent() {
     }
 
     if (!serviceSearch.trim()) {
-      setServices([])
-      setSelectedService(null)
-      setServiceError(null)
+      loadAllPlatformServices(selectedPlatform)
       return
     }
 
-    loadServices(selectedPlatform, serviceSearch)
-  }, [selectedPlatform, serviceSearch, loadServices])
+    searchServices(selectedPlatform, serviceSearch)
+  }, [selectedPlatform, serviceSearch, loadAllPlatformServices, searchServices])
 
   const charge = selectedService ? calculateCharge(selectedService.rate_per_1k, quantity) : 0
   const canAfford = Number(user?.balance || 0) >= charge
@@ -148,12 +191,8 @@ function OrderPageContent() {
                 <div className="text-sm text-red-400 mb-3">{serviceError}</div>
               )}
 
-              {!serviceSearch.trim() && !serviceLoading && (
-                <div className="text-[#6B7280] text-sm text-center py-6">Type to search services</div>
-              )}
-
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {serviceSearch.trim() && services.length === 0 && !serviceLoading && !serviceError ? (
+                {services.length === 0 && !serviceLoading && !serviceError ? (
                   <div className="text-[#6B7280] text-sm text-center py-6">No services found</div>
                 ) : services.map(svc => (
                   <div key={svc.id} onClick={() => { setSelectedService(svc); setQuantity(svc.min_qty) }}
