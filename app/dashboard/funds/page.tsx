@@ -39,17 +39,18 @@ export default function AddFundsPage() {
       const res = await api.get('/api/payments/methods')
       const paymentMethods = res.data.methods
       
-      if (user?.country === 'Liberia') {
+      const hasPawaPayMethod = paymentMethods.some((method: any) => method.id.startsWith('pawapay_'))
+      if (user?.country === 'Liberia' || !hasPawaPayMethod) {
         paymentMethods.push({
-          id: 'manual_liberia',
-          name: 'Mobile Money (Liberia)',
-          description: 'MTN Lonestar or Orange Money',
-          icon: '🇱🇷',
+          id: 'manual_transfer',
+          name: 'Manual Transfer',
+          description: user?.country === 'Liberia' ? 'MTN Lonestar or Orange Money' : 'Send money manually and upload proof',
+          icon: user?.country === 'Liberia' ? '🇱🇷' : '📲',
           instant: false,
           badge: 'Manual — 1-2 hours'
         })
       }
-      
+
       setMethods(paymentMethods)
       if (paymentMethods.length > 0) setSelectedMethod(paymentMethods[0].id)
     } catch (err) {
@@ -98,7 +99,7 @@ export default function AddFundsPage() {
           amount, payment_method: selectedMethod, phone, country: user?.country
         })
         showToast(`📱 Payment prompt sent to ${phone}. Check your phone!`, 'info')
-      } else if (selectedMethod === 'manual_liberia') {
+      } else if (selectedMethod === 'manual_transfer' || selectedMethod === 'manual_liberia') {
         showToast('Fill in the form below to submit your manual payment', 'info')
       } else {
         showToast('Payment method coming soon', 'info')
@@ -134,7 +135,7 @@ export default function AddFundsPage() {
   }
 
   const isMobileMoney = selectedMethod.startsWith('pawapay_')
-  const isManualLiberia = selectedMethod === 'manual_liberia'
+  const isManualTransfer = selectedMethod === 'manual_transfer' || selectedMethod === 'manual_liberia'
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
@@ -187,7 +188,7 @@ export default function AddFundsPage() {
             </div>
           )}
 
-          {isManualLiberia && manualSettings && (
+          {isManualTransfer && manualSettings && (
             <div className="card space-y-4">
               <div>
                 <h3 className="text-white font-bold mb-3">📱 Send Mobile Money to BOASTLIB</h3>
@@ -279,7 +280,7 @@ export default function AddFundsPage() {
             </div>
           )}
 
-          {!isManualLiberia && (
+          {!isManualTransfer && (
             <div className="card">
               <h2 className="text-white font-bold mb-4">Amount (USD)</h2>
               <div className="flex flex-wrap gap-2 mb-4">
@@ -302,7 +303,7 @@ export default function AddFundsPage() {
           )}
         </div>
 
-        {!isManualLiberia && (
+        {!isManualTransfer && (
           <div className="space-y-4">
             <div className="card sticky top-4">
               <h2 className="text-white font-bold mb-4">Order Summary</h2>

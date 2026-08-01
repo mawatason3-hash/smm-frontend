@@ -5,7 +5,16 @@ import { useToast } from '@/contexts/ToastContext'
 import api from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
-const COUNTRIES = ['Rwanda', 'Liberia', 'Uganda', 'Kenya', 'Tanzania', 'Ghana', 'Nigeria', 'Cameroon', 'Ivory Coast', 'Senegal', 'Zambia', 'Mozambique', 'South Africa', 'United States', 'United Kingdom', 'Other']
+const COUNTRIES = [
+  'Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cape Verde',
+  'Chad', 'Comoros', 'Congo', 'Côte d\'Ivoire', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea',
+  'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Kenya', 'Lesotho',
+  'Liberia', 'Libya', 'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Morocco', 'Mozambique',
+  'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'Sao Tome and Principe', 'Senegal', 'Seychelles', 'Sierra Leone',
+  'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe',
+  'United States', 'United Kingdom', 'Canada', 'France', 'Germany', 'Netherlands', 'Belgium', 'Spain', 'Italy', 'Portugal',
+  'Switzerland', 'Australia', 'Other'
+]
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth()

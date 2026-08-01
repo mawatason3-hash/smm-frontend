@@ -135,13 +135,9 @@ export default function LandingPage() {
               >
                 Get Started
               </Link>
-              <Link
-                href="/"
-                onClick={() => setMenuOpen(false)}
-                className="text-[#9CA3AF] hover:text-white text-sm font-medium py-3 px-2 border-b border-[#2D2D50]/40"
-              >
-                Install App
-              </Link>
+              <div className="border-b border-[#2D2D50]/40 py-2">
+                <PWAInstallButton variant="nav" />
+              </div>
             </div>
           </div>
         )}

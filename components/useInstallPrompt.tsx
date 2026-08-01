@@ -17,6 +17,10 @@ interface InstallPromptContextValue {
   closeManualInstructions: () => void
 }
 
+const isAndroid = (userAgent: string) => /android/i.test(userAgent)
+const isIOSDevice = (userAgent: string) => /iPad|iPhone|iPod/.test(userAgent)
+const isSafariBrowser = (userAgent: string) => /^((?!chrome|android).)*safari/i.test(userAgent)
+
 const InstallPromptContext = createContext<InstallPromptContextValue | undefined>(undefined)
 
 export function InstallPromptProvider({ children }: { children: ReactNode }) {
@@ -33,11 +37,13 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
     const installed = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true
     setIsInstalled(installed)
 
-    const ios = /iPad|iPhone|iPod/.test(nav.userAgent) && !(nav as any).MSStream
+    const ios = isIOSDevice(nav.userAgent) && !(nav as any).MSStream
     setIsIOS(ios)
 
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    setBrowserSupportsInstall(ios || !isSafari)
+    const android = isAndroid(nav.userAgent)
+    const safari = isSafariBrowser(navigator.userAgent)
+    const supportsInstallPrompt = ios || android || !safari || nav.standalone === true
+    setBrowserSupportsInstall(supportsInstallPrompt)
 
     const handler = (e: Event) => {
       e.preventDefault()
@@ -58,8 +64,15 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const openManualInstructions = useCallback(() => {
+    setShowManualInstructions(true)
+  }, [])
+
   const handlePromptInstall = useCallback(async () => {
-    if (!deferredPrompt) return
+    if (!deferredPrompt) {
+      openManualInstructions()
+      return
+    }
 
     try {
       await deferredPrompt.prompt()
@@ -68,15 +81,11 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
         setIsInstalled(true)
       }
     } catch {
-      // ignore prompt failures
+      openManualInstructions()
     } finally {
       setDeferredPrompt(null)
     }
-  }, [deferredPrompt])
-
-  const openManualInstructions = useCallback(() => {
-    setShowManualInstructions(true)
-  }, [])
+  }, [deferredPrompt, openManualInstructions])
 
   const closeManualInstructions = useCallback(() => {
     setShowManualInstructions(false)
