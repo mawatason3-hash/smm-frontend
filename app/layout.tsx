@@ -33,7 +33,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://boastlib.space',
   },
-  icons: { icon: '/favicon.ico' },
+  icons: { 
+    icon: '/icons/icon-192x192.png',
+    apple: '/icons/apple-touch-icon.png'
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

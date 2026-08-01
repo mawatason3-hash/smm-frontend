@@ -55,10 +55,10 @@ export default function AddFundsPage() {
       if (paymentMethods.length > 0) setSelectedMethod(paymentMethods[0].id)
     } catch (err) {
       setMethods([
-        { id: 'dodopayments', name: 'Credit/Debit Card', description: 'Visa, Mastercard via DodoPay', icon: '💳', instant: true },
-        { id: 'crypto', name: 'Cryptocurrency', description: 'Bitcoin, USDT TRC20', icon: '₿', instant: false },
+        { id: 'paystack', name: 'Credit/Debit Card', description: 'Visa, Mastercard via Paystack', icon: '💳', instant: true },
+        { id: 'manual_transfer', name: 'Manual Transfer', description: 'Bank transfer or mobile money', icon: '📲', instant: false },
       ])
-      setSelectedMethod('dodopayments')
+      setSelectedMethod('paystack')
     }
   }
 
@@ -87,10 +87,7 @@ export default function AddFundsPage() {
     if (amount < 1) { showToast('Minimum deposit is $1', 'error'); return }
     setLoading(true)
     try {
-      if (selectedMethod === 'dodopayments') {
-        const res = await api.post('/api/payments/dodopayments/initialize', { amount, payment_method: 'dodopayments' })
-        window.location.href = res.data.checkout_url
-      } else if (selectedMethod === 'paystack') {
+      if (selectedMethod === 'paystack') {
         const res = await api.post('/api/payments/paystack/initialize', { amount, payment_method: 'paystack' })
         window.location.href = res.data.authorization_url
       } else if (selectedMethod.startsWith('pawapay_')) {
