@@ -51,13 +51,18 @@ export default function AddFundsPage() {
       }
 
       setMethods(paymentMethods)
-      if (paymentMethods.length > 0) setSelectedMethod(paymentMethods[0].id)
+      setSelectedMethod(prevSelected => {
+        if (prevSelected && paymentMethods.some((m: any) => m.id === prevSelected)) {
+          return prevSelected
+        }
+        return paymentMethods.length > 0 ? paymentMethods[0].id : ''
+      })
     } catch (err) {
       setMethods([
         { id: 'paystack', name: 'Credit/Debit Card', description: 'Visa, Mastercard via Paystack', icon: '💳', instant: true },
         { id: 'manual_transfer', name: 'Manual Transfer', description: 'Bank transfer or mobile money', icon: '📲', instant: false },
       ])
-      setSelectedMethod('paystack')
+      setSelectedMethod(prevSelected => prevSelected || 'paystack')
     }
   }, [user?.country])
 
@@ -448,7 +453,7 @@ export default function AddFundsPage() {
                 <div className="text-[#9CA3AF] text-xs">No hidden fees ever</div>
               </div>
 
-              <button onClick={handlePay} disabled={loading || amount < 1}
+              <button onClick={handlePay} disabled={loading || amount < 1 || !selectedMethod}
                 className="btn-primary w-full py-3.5 mt-4">
                 {loading ? 'Processing...' : `Proceed to Payment — ${formatCurrency(amount)}`}
               </button>
