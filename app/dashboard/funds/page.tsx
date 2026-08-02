@@ -20,6 +20,7 @@ export default function AddFundsPage() {
   const [myManualPayments, setMyManualPayments] = useState<any[]>([])
   const [paystackPreview, setPaystackPreview] = useState<any>(null)
   const [pawapayPreview, setPawapayPreview] = useState<any>(null)
+  const isLiberia = user?.country === 'Liberia'
   
   // Manual payment form state
   const [manualAmount, setManualAmount] = useState(10)
@@ -46,10 +47,12 @@ export default function AddFundsPage() {
         paymentMethods.push({
           id: 'manual_transfer',
           name: 'Manual Transfer',
-          description: user?.country === 'Liberia' ? 'MTN Lonestar or Orange Money' : 'Send money manually and upload proof',
+          description: user?.country === 'Liberia'
+            ? 'MTN Lonestar or Orange Money'
+            : 'Request country-specific payment instructions',
           icon: user?.country === 'Liberia' ? '🇱🇷' : '📲',
           instant: false,
-          badge: 'Manual — 4-10 min'
+          badge: user?.country === 'Liberia' ? 'Manual — 4-10 min' : 'Manual request'
         })
       }
 
@@ -73,7 +76,9 @@ export default function AddFundsPage() {
 
   const loadManualSettings = async () => {
     try {
-      const res = await api.get('/api/payments/manual/settings')
+      const res = await api.get('/api/payments/manual/settings', {
+        params: { country: user?.country }
+      })
       setManualSettings(res.data)
     } catch (err) {}
   }
@@ -110,7 +115,12 @@ export default function AddFundsPage() {
         await refreshUser()
         loadTransactionHistory()
       } else if (selectedMethod === 'manual_transfer' || selectedMethod === 'manual_liberia') {
-        showToast('Fill in the form below to submit your manual payment', 'info')
+        showToast(
+          isLiberia
+            ? 'Fill in the form below to submit your manual payment.'
+            : 'Submit your manual request and admin will send payment instructions for your country.',
+          'info'
+        )
       } else {
         showToast('Payment method coming soon', 'info')
       }
@@ -122,18 +132,25 @@ export default function AddFundsPage() {
   const handleManualSubmit = async () => {
     if (manualAmount < 1) { showToast('Minimum amount is $1', 'error'); return }
     if (!manualPhone) { showToast('Phone number required', 'error'); return }
-    if (!manualTransactionId) { showToast('Transaction ID required', 'error'); return }
+    if (isLiberia && !manualTransactionId) { showToast('Transaction ID required', 'error'); return }
+    if (isLiberia && !manualNetwork) { showToast('Network is required for Liberia manual payments', 'error'); return }
     
     setManualLoading(true)
     try {
       const res = await api.post('/api/payments/manual/submit', {
         amount: manualAmount,
-        network: manualNetwork,
+        network: isLiberia ? manualNetwork : undefined,
         phone_used: manualPhone,
-        transaction_id: manualTransactionId,
+        transaction_id: isLiberia ? manualTransactionId : manualTransactionId || undefined,
         proof_note: manualNote
       })
-      showToast('✅ Payment submitted! Admin will review within 4-10 minutes', 'success')
+      showToast(
+        res.data.message ||
+        (isLiberia
+          ? '✅ Payment submitted! Admin will review within 4-10 minutes'
+          : '✅ Your request has been submitted. Admin will send payment instructions for your country.'),
+        'success'
+      )
       setManualAmount(10)
       setManualPhone('')
       setManualTransactionId('')
@@ -242,31 +259,40 @@ export default function AddFundsPage() {
                 <h3 className="text-white font-bold mb-3">📱 Send Mobile Money to BOASTLIB</h3>
                 
                 <div className="mb-4 p-3 rounded-xl bg-[#1F1F3A] border border-[#2D2D50]">
-                  <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Step 1: Send money to our number</div>
-                  <div className="space-y-2">
-                    <div>
-                      <div className="text-[#6B7280] text-xs mb-1">MTN Lonestar</div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-white font-mono font-bold text-sm">{manualSettings.mtn_number}</div>
-                        <button onClick={() => {
-                          navigator.clipboard.writeText(manualSettings.mtn_number)
-                          showToast('Copied to clipboard!', 'success')
-                        }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30">Copy</button>
-                      </div>
-                    </div>
-                    {manualSettings.orange_number && (
-                      <div>
-                        <div className="text-[#6B7280] text-xs mb-1">Orange Money</div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-white font-mono font-bold text-sm">{manualSettings.orange_number}</div>
-                          <button onClick={() => {
-                            navigator.clipboard.writeText(manualSettings.orange_number)
-                            showToast('Copied to clipboard!', 'success')
-                          }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30">Copy</button>
+                  {isLiberia ? (
+                    <>
+                      <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Step 1: Send money to our number</div>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="text-[#6B7280] text-xs mb-1">MTN Lonestar</div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-white font-mono font-bold text-sm">{manualSettings.mtn_number || '0555166954'}</div>
+                            <button onClick={() => {
+                              navigator.clipboard.writeText(manualSettings.mtn_number || '0555166954')
+                              showToast('Copied to clipboard!', 'success')
+                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30">Copy</button>
+                          </div>
                         </div>
+                        {manualSettings.orange_number && (
+                          <div>
+                            <div className="text-[#6B7280] text-xs mb-1">Orange Money</div>
+                            <div className="flex items-center gap-2">
+                              <div className="text-white font-mono font-bold text-sm">{manualSettings.orange_number}</div>
+                              <button onClick={() => {
+                                navigator.clipboard.writeText(manualSettings.orange_number)
+                                showToast('Copied to clipboard!', 'success')
+                              }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30">Copy</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Request payment instructions for your country</div>
+                      <div className="text-[#9CA3AF] text-sm mb-3">{manualSettings.instructions || 'Submit your request and our admin will send the right payment method or number for your country.'}</div>
+                    </>
+                  )}
                 </div>
 
                 <div className="text-[#9CA3AF] text-xs font-semibold mb-3">Step 2: Submit your proof below</div>
@@ -284,19 +310,23 @@ export default function AddFundsPage() {
                       className="input mt-1" placeholder="+231 88X XXX XXX" />
                   </div>
 
-                  <div>
-                    <label className="text-white text-xs font-semibold">Network</label>
-                    <select value={manualNetwork} onChange={e => setManualNetwork(e.target.value)}
-                      className="input mt-1">
-                      <option value="MTN_LIBERIA">MTN Lonestar</option>
-                      <option value="ORANGE_LIBERIA">Orange Money</option>
-                    </select>
-                  </div>
+                  {isLiberia && (
+                    <div>
+                      <label className="text-white text-xs font-semibold">Network</label>
+                      <select value={manualNetwork} onChange={e => setManualNetwork(e.target.value)}
+                        className="input mt-1">
+                        <option value="MTN_LIBERIA">MTN Lonestar</option>
+                        <option value="ORANGE_LIBERIA">Orange Money</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div>
-                    <label className="text-white text-xs font-semibold">Transaction ID (from SMS receipt)</label>
+                    <label className="text-white text-xs font-semibold">
+                      Transaction ID {isLiberia ? '(from SMS receipt)' : '(optional if you already have details)'}
+                    </label>
                     <input type="text" value={manualTransactionId} onChange={e => setManualTransactionId(e.target.value)}
-                      className="input mt-1" placeholder="e.g., TXN123456789" />
+                      className="input mt-1" placeholder={isLiberia ? 'e.g., TXN123456789' : 'Optional transaction ID'} />
                   </div>
 
                   <div>
@@ -307,7 +337,7 @@ export default function AddFundsPage() {
 
                   <button onClick={handleManualSubmit} disabled={manualLoading}
                     className="btn-primary w-full py-3">
-                    {manualLoading ? 'Submitting...' : '✓ Submit for Review'}
+                    {manualLoading ? 'Submitting...' : isLiberia ? '✓ Submit for Review' : '✓ Request Instructions'}
                   </button>
                 </div>
 

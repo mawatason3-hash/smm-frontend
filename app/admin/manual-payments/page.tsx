@@ -157,6 +157,7 @@ export default function AdminManualPaymentsPage() {
               <thead>
                 <tr className="border-b border-[#2D2D50] text-[#9CA3AF]">
                   <th className="text-left py-3 px-3 font-semibold">User</th>
+                  <th className="text-left py-3 px-3 font-semibold">Country</th>
                   <th className="text-right py-3 px-3 font-semibold">Amount</th>
                   <th className="text-left py-3 px-3 font-semibold">Network</th>
                   <th className="text-left py-3 px-3 font-semibold">Phone</th>
@@ -174,8 +175,9 @@ export default function AdminManualPaymentsPage() {
                       <div className="text-white font-semibold">{payment.user.full_name}</div>
                       <div className="text-[#9CA3AF] text-xs">{payment.user.email}</div>
                     </td>
+                    <td className="py-3 px-3 text-white">{payment.user.country || 'Unknown'}</td>
                     <td className="py-3 px-3 text-right text-green-400 font-bold">{formatCurrency(payment.amount)}</td>
-                    <td className="py-3 px-3 text-white">{payment.network === 'MTN_LIBERIA' ? 'MTN' : 'Orange'}</td>
+                    <td className="py-3 px-3 text-white">{payment.network === 'MTN_LIBERIA' ? 'MTN' : payment.network === 'ORANGE_LIBERIA' ? 'Orange' : payment.network || 'Other'}</td>
                     <td className="py-3 px-3 text-[#9CA3AF] font-mono text-xs">{payment.phone_used}</td>
                     <td className="py-3 px-3 text-[#9CA3AF] font-mono text-xs">{payment.transaction_id}</td>
                     <td className="py-3 px-3 text-[#9CA3AF] text-xs max-w-xs truncate">{payment.proof_note || '—'}</td>
@@ -246,9 +248,9 @@ export default function AdminManualPaymentsPage() {
             </div>
 
             <div>
-              <label className="text-white text-xs font-semibold">Admin note (optional)</label>
+              <label className="text-white text-xs font-semibold">Payment instructions / note to user (optional)</label>
               <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)}
-                className="input mt-1 text-sm" placeholder="E.g., Verified via SMS..." rows={2} />
+                className="input mt-1 text-sm" placeholder="E.g., Send to 0555166954 or use Orange Money in your country..." rows={2} />
             </div>
 
             <div className="flex gap-2">
