@@ -358,30 +358,32 @@ export default function AddFundsPage() {
                       className="input mt-1" placeholder="+231 88X XXX XXX" />
                   </div>
 
-                  {isLiberia && (
-                    <div>
-                      <label className="text-white text-xs font-semibold">Network</label>
-                      <select value={manualNetwork} onChange={e => setManualNetwork(e.target.value)}
-                        className="input mt-1">
-                        <option value="MTN_LIBERIA">MTN Lonestar</option>
-                        <option value="ORANGE_LIBERIA">Orange Money</option>
-                      </select>
-                    </div>
-                  )}
+                  {isLiberia ? (
+                    <>
+                      <div>
+                        <label className="text-white text-xs font-semibold">Network</label>
+                        <select value={manualNetwork} onChange={e => setManualNetwork(e.target.value)}
+                          className="input mt-1">
+                          <option value="MTN_LIBERIA">MTN Lonestar</option>
+                          <option value="ORANGE_LIBERIA">Orange Money</option>
+                        </select>
+                      </div>
 
-                  <div>
-                    <label className="text-white text-xs font-semibold">
-                      Transaction ID (optional)
-                    </label>
-                    <input type="text" value={manualTransactionId} onChange={e => setManualTransactionId(e.target.value)}
-                      className="input mt-1" placeholder={isLiberia ? 'Optional transaction ID from SMS receipt' : 'Optional transaction ID'} />
-                  </div>
+                      <div>
+                        <label className="text-white text-xs font-semibold">
+                          Transaction ID (optional)
+                        </label>
+                        <input type="text" value={manualTransactionId} onChange={e => setManualTransactionId(e.target.value)}
+                          className="input mt-1" placeholder="Optional transaction ID from SMS receipt" />
+                      </div>
 
-                  <div>
-                    <label className="text-white text-xs font-semibold">Note (optional)</label>
-                    <textarea value={manualNote} onChange={e => setManualNote(e.target.value)}
-                      className="input mt-1 resize-none" placeholder="Any additional details..." rows={2} />
-                  </div>
+                      <div>
+                        <label className="text-white text-xs font-semibold">Note (optional)</label>
+                        <textarea value={manualNote} onChange={e => setManualNote(e.target.value)}
+                          className="input mt-1 resize-none" placeholder="Any additional details..." rows={2} />
+                      </div>
+                    </>
+                  ) : null}
 
                   <button onClick={handleManualSubmit} disabled={manualLoading}
                     className="btn-primary w-full py-3">
