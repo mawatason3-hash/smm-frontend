@@ -97,7 +97,18 @@ export default function AddFundsPage() {
         const res = await api.post('/api/payments/pawapay/initiate', {
           amount, payment_method: selectedMethod, phone, country: user?.country
         })
-        showToast(`📱 Payment prompt sent to ${phone}. Check your phone!`, 'info')
+
+        if (res.data?.status === 'ACCEPTED') {
+          showToast(
+            `✅ Deposit request accepted. Your pending deposit is now recorded and balance will refresh when the webhook confirms payment.`,
+            'success'
+          )
+        } else {
+          showToast(`📱 Payment prompt sent to ${phone}. Check your phone!`, 'info')
+        }
+
+        await refreshUser()
+        loadTransactionHistory()
       } else if (selectedMethod === 'manual_transfer' || selectedMethod === 'manual_liberia') {
         showToast('Fill in the form below to submit your manual payment', 'info')
       } else {
