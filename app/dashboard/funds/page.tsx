@@ -49,7 +49,7 @@ export default function AddFundsPage() {
           description: user?.country === 'Liberia' ? 'MTN Lonestar or Orange Money' : 'Send money manually and upload proof',
           icon: user?.country === 'Liberia' ? '🇱🇷' : '📲',
           instant: false,
-          badge: 'Manual — 1-2 hours'
+          badge: 'Manual — 4-10 min'
         })
       }
 
@@ -133,7 +133,7 @@ export default function AddFundsPage() {
         transaction_id: manualTransactionId,
         proof_note: manualNote
       })
-      showToast('✅ Payment submitted! Admin will review within 1-2 hours', 'success')
+      showToast('✅ Payment submitted! Admin will review within 4-10 minutes', 'success')
       setManualAmount(10)
       setManualPhone('')
       setManualTransactionId('')
@@ -159,7 +159,12 @@ export default function AddFundsPage() {
       try {
         if (selectedMethod === 'paystack') {
           const res = await api.post('/api/payments/paystack/preview', { amount, payment_method: 'paystack' })
-          setPaystackPreview(res.data)
+          setPaystackPreview({
+            ...res.data,
+            display_text: res.data.currency_local && res.data.currency_local !== 'USD'
+              ? `You are paying $${amount} USD. Paystack will charge ${res.data.amount_local} ${res.data.currency_local} during checkout.`
+              : res.data.display_text
+          })
           return
         }
 
