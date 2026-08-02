@@ -18,6 +18,8 @@ export default function AddFundsPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [manualSettings, setManualSettings] = useState<any>(null)
   const [myManualPayments, setMyManualPayments] = useState<any[]>([])
+  const [paystackPreview, setPaystackPreview] = useState<any>(null)
+  const [pawapayPreview, setPawapayPreview] = useState<any>(null)
   
   // Manual payment form state
   const [manualAmount, setManualAmount] = useState(10)
@@ -133,6 +135,39 @@ export default function AddFundsPage() {
 
   const isMobileMoney = selectedMethod.startsWith('pawapay_')
   const isManualTransfer = selectedMethod === 'manual_transfer' || selectedMethod === 'manual_liberia'
+
+  useEffect(() => {
+    const loadPaymentPreview = async () => {
+      setPaystackPreview(null)
+      setPawapayPreview(null)
+
+      if (amount < 1) {
+        return
+      }
+
+      try {
+        if (selectedMethod === 'paystack') {
+          const res = await api.post('/api/payments/paystack/preview', { amount, payment_method: 'paystack' })
+          setPaystackPreview(res.data)
+          return
+        }
+
+        if (selectedMethod.startsWith('pawapay_')) {
+          const res = await api.post('/api/payments/pawapay/preview', {
+            amount,
+            payment_method: selectedMethod,
+            country: user?.country
+          })
+          setPawapayPreview(res.data)
+        }
+      } catch (err) {
+        setPaystackPreview(null)
+        setPawapayPreview(null)
+      }
+    }
+
+    loadPaymentPreview()
+  }, [selectedMethod, amount, user?.country])
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
@@ -312,6 +347,12 @@ export default function AddFundsPage() {
                   <span className="text-white font-black text-lg">{formatCurrency(amount)}</span>
                 </div>
               </div>
+
+              {(paystackPreview?.display_text || pawapayPreview?.display_text) && (
+                <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center text-sm text-blue-100">
+                  {paystackPreview?.display_text || pawapayPreview?.display_text}
+                </div>
+              )}
 
               <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
                 <div className="text-green-400 font-bold text-sm">You Save $0!</div>
