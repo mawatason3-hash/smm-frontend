@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -18,6 +18,7 @@ export default function AddFundsPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [manualSettings, setManualSettings] = useState<any>(null)
   const [myManualPayments, setMyManualPayments] = useState<any[]>([])
+  const [manualPaymentStatusMap, setManualPaymentStatusMap] = useState<Record<string, string>>({})
   const [paystackPreview, setPaystackPreview] = useState<any>(null)
   const [pawapayPreview, setPawapayPreview] = useState<any>(null)
   const isLiberia = user?.country === 'Liberia'
@@ -30,14 +31,7 @@ export default function AddFundsPage() {
   const [manualNote, setManualNote] = useState('')
   const [manualLoading, setManualLoading] = useState(false)
 
-  useEffect(() => {
-    loadPaymentMethods()
-    loadTransactionHistory()
-    loadManualSettings()
-    loadMyManualPayments()
-  }, [])
-
-  const loadPaymentMethods = async () => {
+  const loadPaymentMethods = useCallback(async () => {
     try {
       const res = await api.get('/api/payments/methods')
       const paymentMethods = res.data.methods
@@ -65,30 +59,80 @@ export default function AddFundsPage() {
       ])
       setSelectedMethod('paystack')
     }
-  }
+  }, [user?.country])
 
-  const loadTransactionHistory = async () => {
+  const loadTransactionHistory = useCallback(async () => {
     try {
       const res = await api.get('/api/transactions?limit=5')
       setTransactions(res.data.items || [])
     } catch (err) {}
-  }
+  }, [])
 
-  const loadManualSettings = async () => {
+  const loadManualSettings = useCallback(async () => {
     try {
       const res = await api.get('/api/payments/manual/settings', {
         params: { country: user?.country }
       })
       setManualSettings(res.data)
     } catch (err) {}
-  }
+  }, [user?.country])
 
-  const loadMyManualPayments = async () => {
+  const loadMyManualPayments = useCallback(async (showApprovalNotifications = true) => {
     try {
       const res = await api.get('/api/payments/manual/my-requests')
-      setMyManualPayments(res.data.items || [])
+      const items = res.data.items || []
+
+      if (showApprovalNotifications) {
+        const newlyApproved = items.filter((item: any) =>
+          manualPaymentStatusMap[item.id] === 'pending' && item.status === 'approved'
+        )
+
+        if (newlyApproved.length > 0) {
+          newlyApproved.forEach((item: any) => {
+            showToast(
+              `✅ Your manual payment of $${item.amount} was approved and credited.`,
+              'success'
+            )
+          })
+          await refreshUser()
+          loadTransactionHistory()
+        }
+      }
+
+      setMyManualPayments(items)
+      setManualPaymentStatusMap(
+        items.reduce((acc: Record<string, string>, item: any) => ({
+          ...acc,
+          [item.id]: item.status
+        }), {})
+      )
     } catch (err) {}
-  }
+  }, [manualPaymentStatusMap, refreshUser, showToast, loadTransactionHistory])
+
+  useEffect(() => {
+    loadPaymentMethods()
+    loadTransactionHistory()
+    loadManualSettings()
+    loadMyManualPayments(false)
+  }, [loadPaymentMethods, loadTransactionHistory, loadManualSettings, loadMyManualPayments])
+
+  useEffect(() => {
+    const handleFocus = () => loadMyManualPayments()
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [loadMyManualPayments])
+
+  useEffect(() => {
+    if (!myManualPayments.some(payment => payment.status === 'pending')) {
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      loadMyManualPayments()
+    }, 15000)
+
+    return () => window.clearInterval(interval)
+  }, [myManualPayments, loadMyManualPayments])
 
   const handlePay = async () => {
     if (amount < 1) { showToast('Minimum deposit is $1', 'error'); return }

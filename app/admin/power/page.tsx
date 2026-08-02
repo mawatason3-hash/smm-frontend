@@ -77,7 +77,7 @@ export default function AdminPowerPage() {
       {/* Gold quote banner */}
       <div className="p-4 rounded-2xl text-center" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.3)' }}>
         <p className="text-yellow-300 text-sm font-medium italic">
-          "A cobbler's children should have the best shoes. A platform owner should have the best social media presence."
+          &quot;A cobbler&apos;s children should have the best shoes. A platform owner should have the best social media presence.&quot;
         </p>
       </div>
 

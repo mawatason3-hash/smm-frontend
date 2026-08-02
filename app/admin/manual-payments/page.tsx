@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -19,12 +19,10 @@ export default function AdminManualPaymentsPage() {
   const [adminNote, setAdminNote] = useState('')
   const [rejectReason, setRejectReason] = useState('')
   const [actioning, setActioning] = useState(false)
+  const [notifyLoading, setNotifyLoading] = useState(false)
+  const [notifyingId, setNotifyingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadPayments()
-  }, [status, page])
-
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     setLoading(true)
     try {
       const res = await api.get('/api/admin/manual-payments', {
@@ -38,7 +36,11 @@ export default function AdminManualPaymentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, showToast, status])
+
+  useEffect(() => {
+    loadPayments()
+  }, [loadPayments])
 
   const handleApproveClick = (payment: any) => {
     setApproveModal(payment)
@@ -84,6 +86,18 @@ export default function AdminManualPaymentsPage() {
       showToast(err?.response?.data?.detail || 'Failed to reject payment', 'error')
     } finally {
       setActioning(false)
+    }
+  }
+
+  const notifyPayment = async (payment: any) => {
+    setNotifyingId(payment.id)
+    try {
+      await api.post(`/api/admin/manual-payments/${payment.id}/notify`)
+      showToast('💬 Notification sent to support', 'success')
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || 'Failed to send notification', 'error')
+    } finally {
+      setNotifyingId(null)
     }
   }
 
@@ -189,7 +203,7 @@ export default function AdminManualPaymentsPage() {
                     </td>
                     <td className="py-3 px-3 text-center">
                       {payment.status === 'pending' && (
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2 justify-center flex-wrap">
                           <button onClick={() => handleApproveClick(payment)}
                             className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-semibold hover:bg-green-500/30">
                             ✓
@@ -197,6 +211,11 @@ export default function AdminManualPaymentsPage() {
                           <button onClick={() => handleRejectClick(payment)}
                             className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-semibold hover:bg-red-500/30">
                             ✕
+                          </button>
+                          <button onClick={() => notifyPayment(payment)}
+                            disabled={notifyingId === payment.id}
+                            className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30 disabled:opacity-50">
+                            {notifyingId === payment.id ? 'Sending…' : 'Notify'}
                           </button>
                         </div>
                       )}
