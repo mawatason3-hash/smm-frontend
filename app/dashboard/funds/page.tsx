@@ -132,7 +132,6 @@ export default function AddFundsPage() {
   const handleManualSubmit = async () => {
     if (manualAmount < 1) { showToast('Minimum amount is $1', 'error'); return }
     if (!manualPhone) { showToast('Phone number required', 'error'); return }
-    if (isLiberia && !manualTransactionId) { showToast('Transaction ID required', 'error'); return }
     if (isLiberia && !manualNetwork) { showToast('Network is required for Liberia manual payments', 'error'); return }
     
     setManualLoading(true)
@@ -323,10 +322,10 @@ export default function AddFundsPage() {
 
                   <div>
                     <label className="text-white text-xs font-semibold">
-                      Transaction ID {isLiberia ? '(from SMS receipt)' : '(optional if you already have details)'}
+                      Transaction ID (optional)
                     </label>
                     <input type="text" value={manualTransactionId} onChange={e => setManualTransactionId(e.target.value)}
-                      className="input mt-1" placeholder={isLiberia ? 'e.g., TXN123456789' : 'Optional transaction ID'} />
+                      className="input mt-1" placeholder={isLiberia ? 'Optional transaction ID from SMS receipt' : 'Optional transaction ID'} />
                   </div>
 
                   <div>
