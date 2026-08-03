@@ -20,11 +20,11 @@ export default function AdminServicesPage() {
   const [syncing, setSyncing] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showProviderTools, setShowProviderTools] = useState(false)
-  const [providerTool, setProviderTool] = useState('jap')
+  const [providerTool, setProviderTool] = useState('wizsmm')
   const [providerToolAction, setProviderToolAction] = useState<'activate' | 'deactivate' | 'delete'>('deactivate')
   const [form, setForm] = useState({
     platform: '', name: '', rate_per_1k: '', cost_per_1k: '',
-    min_qty: '100', max_qty: '100000', provider: '', provider_service_id: '',
+    min_qty: '100', max_qty: '100000', provider: 'wizsmm', provider_service_id: '',
     avg_speed: '1-2 hours', is_instant: false, refill_enabled: false,
     cancel_enabled: false, is_active: true, is_recommended: false, description: '', quality_badge: ''
   })
@@ -132,9 +132,9 @@ export default function AdminServicesPage() {
           <p className="text-[#9CA3AF] text-sm">{total} services</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={() => syncProvider('jap')} disabled={syncing}
+          <button onClick={() => syncProvider('wizsmm')} disabled={syncing}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#3B82F6]/50 text-[#3B82F6] hover:bg-blue-500/10 text-sm transition-colors disabled:opacity-50">
-            🔄 {syncing ? 'Syncing...' : 'Sync from JAP'}
+            🔄 {syncing ? 'Syncing...' : 'Sync from WIZSMM'}
           </button>
           <button onClick={() => setShowProviderTools(true)} className="px-4 py-2 rounded-xl border border-[#2D2D50] bg-[#1F1F3A] text-[#9CA3AF] hover:text-white text-sm">🔧 Provider Tools</button>
           <button onClick={openCreate} className="btn-primary text-sm px-5 py-2.5">+ Add Service</button>
@@ -258,8 +258,7 @@ export default function AdminServicesPage() {
               <div>
                 <label className="block text-xs text-[#9CA3AF] mb-1">Provider</label>
                 <select value={providerTool} onChange={e => setProviderTool(e.target.value)} className="input" style={{ appearance: 'none' }}>
-                  <option value="jap">JAP</option>
-                  <option value="smmwiz">SMMWiz</option>
+                  <option value="wizsmm">WIZSMM</option>
                   <option value="all">All</option>
                 </select>
               </div>
@@ -318,10 +317,7 @@ export default function AdminServicesPage() {
               <div>
                 <label className="block text-xs text-[#9CA3AF] mb-1">Provider</label>
                 <select value={form.provider} onChange={e => setForm(p => ({ ...p, provider: e.target.value }))} className="input" style={{ appearance: 'none' }}>
-                  <option value="">None</option>
-                  <option value="jap">JustAnotherPanel</option>
-                  <option value="peakerr">Peakerr</option>
-                  <option value="smmwiz">SMMWiz</option>
+                  <option value="wizsmm">WIZSMM</option>
                 </select>
               </div>
               <div>

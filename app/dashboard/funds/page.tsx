@@ -30,6 +30,7 @@ export default function AddFundsPage() {
   const [manualTransactionId, setManualTransactionId] = useState('')
   const [manualNote, setManualNote] = useState('')
   const [manualLoading, setManualLoading] = useState(false)
+  const [manualRequestSubmitted, setManualRequestSubmitted] = useState(false)
 
   const loadPaymentMethods = useCallback(async () => {
     try {
@@ -203,6 +204,7 @@ export default function AddFundsPage() {
       setManualPhone('')
       setManualTransactionId('')
       setManualNote('')
+      setManualRequestSubmitted(true)
       loadMyManualPayments()
     } catch (err: any) {
       showToast(err?.response?.data?.detail || 'Failed to submit payment', 'error')
@@ -391,19 +393,31 @@ export default function AddFundsPage() {
                   </button>
                 </div>
 
-                <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-                  <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Step 3: Contact us with screenshot</div>
-                  <div className="flex gap-2">
-                    <a href={`https://wa.me/${manualSettings.whatsapp?.replace(/[^\d+]/g, '')}`} target="_blank" rel="noopener noreferrer"
-                      className="flex-1 px-3 py-2 bg-green-500/20 text-green-400 rounded text-xs font-semibold text-center hover:bg-green-500/30">
-                      💬 WhatsApp
-                    </a>
-                    <a href={manualSettings.telegram} target="_blank" rel="noopener noreferrer"
-                      className="flex-1 px-3 py-2 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold text-center hover:bg-blue-500/30">
-                      📱 Telegram
-                    </a>
+                {manualRequestSubmitted ? (
+                  <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Step 3: Chat with admin on WhatsApp</div>
+                    <div className="text-white text-sm mb-3">
+                      Your request has been submitted. Chat with admin on WhatsApp to complete payment, then admin will approve the request from their dashboard.
+                    </div>
+                    <div className="flex gap-2">
+                      <a href={`https://wa.me/${manualSettings.whatsapp?.replace(/[^\\d+]/g, '')}`} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 px-3 py-2 bg-green-500/20 text-green-400 rounded text-xs font-semibold text-center hover:bg-green-500/30">
+                        💬 Chat on WhatsApp
+                      </a>
+                      <a href={manualSettings.telegram} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 px-3 py-2 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold text-center hover:bg-blue-500/30">
+                        📱 Telegram
+                      </a>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <div className="text-[#9CA3AF] text-xs font-semibold mb-2">Step 3: Chat with admin after request</div>
+                    <div className="text-[#9CA3AF] text-sm">
+                      After submitting your request, a WhatsApp chat button will appear so you can contact admin and complete payment.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
