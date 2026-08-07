@@ -52,6 +52,17 @@ export default function AdminUserDetailPage() {
     } catch { showToast('Action failed', 'error') }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Delete this user permanently?')) return
+    try {
+      await api.delete(`/api/admin/users/${id}`)
+      showToast('User deleted', 'success')
+      router.push('/admin/users')
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || 'Delete failed', 'error')
+    }
+  }
+
   if (loading) return <div className="text-[#6B7280] text-center py-20">Loading user...</div>
   if (!data) return null
 
@@ -89,6 +100,7 @@ export default function AdminUserDetailPage() {
               ? <button onClick={() => handleStatusChange('suspend')} className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm transition-colors">Suspend User</button>
               : <button onClick={() => handleStatusChange('activate')} className="px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 text-sm transition-colors">Activate User</button>
             }
+            <button onClick={handleDelete} className="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition-colors">Delete User</button>
           </div>
         </div>
       </div>

@@ -55,6 +55,15 @@ export default function AdminUsersPage() {
     } catch (err: any) { showToast('Action failed', 'error') }
   }
 
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Delete this user permanently?')) return
+    try {
+      await api.delete(`/api/admin/users/${userId}`)
+      showToast('User deleted', 'success')
+      load()
+    } catch (err: any) { showToast(err?.response?.data?.detail || 'Delete failed', 'error') }
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -127,6 +136,10 @@ export default function AdminUsersPage() {
                       <button onClick={() => handleSuspend(u.id, u.status === 'active' ? 'suspend' : 'activate')}
                         className={`px-2.5 py-1.5 rounded-lg text-xs transition-colors ${u.status === 'active' ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400' : 'bg-green-500/10 hover:bg-green-500/20 text-green-400'}`}>
                         {u.status === 'active' ? 'Suspend' : 'Activate'}
+                      </button>
+                      <button onClick={() => handleDeleteUser(u.id)}
+                        className="px-2.5 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-xs transition-colors">
+                        Delete
                       </button>
                     </div>
                   </td>
