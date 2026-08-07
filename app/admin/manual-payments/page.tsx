@@ -22,6 +22,26 @@ export default function AdminManualPaymentsPage() {
   const [notifyLoading, setNotifyLoading] = useState(false)
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
 
+  const formatWhatsAppPhone = (phone?: string) => {
+    if (!phone) return ''
+    return String(phone).replace(/\D/g, '')
+  }
+
+  const getWhatsAppUrl = (phone?: string, name?: string, amount?: number) => {
+    const digits = formatWhatsAppPhone(phone)
+    const text = encodeURIComponent(
+      `Hello ${name || 'there'}, I’m following up on your manual payment request for ${formatCurrency(amount || 0)} on BOASTLIB.`
+    )
+    return digits.length >= 8
+      ? `https://wa.me/${digits}?text=${text}`
+      : `https://wa.me/?text=${text}`
+  }
+
+  const openWhatsAppChat = (phone?: string, name?: string, amount?: number) => {
+    const url = getWhatsAppUrl(phone, name, amount)
+    window.open(url, '_blank')
+  }
+
   const loadPayments = useCallback(async () => {
     setLoading(true)
     try {
@@ -217,6 +237,12 @@ export default function AdminManualPaymentsPage() {
                             className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-semibold hover:bg-blue-500/30 disabled:opacity-50">
                             {notifyingId === payment.id ? 'Sending…' : 'Notify'}
                           </button>
+                          {payment.phone_used ? (
+                            <button onClick={() => openWhatsAppChat(payment.phone_used, payment.user?.full_name, payment.amount)}
+                              className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-semibold hover:bg-green-500/30">
+                              Chat
+                            </button>
+                          ) : null}
                         </div>
                       )}
                     </td>
