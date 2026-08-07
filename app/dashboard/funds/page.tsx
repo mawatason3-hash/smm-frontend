@@ -183,7 +183,13 @@ export default function AddFundsPage() {
     if (manualAmount < 1) { showToast('Minimum amount is $1', 'error'); return }
     if (!manualPhone) { showToast('Phone number required', 'error'); return }
     if (isLiberia && !manualNetwork) { showToast('Network is required for Liberia manual payments', 'error'); return }
-    
+
+    const whatsappMessage = encodeURIComponent(
+      `I want to do a manual payment on BOASTLIB. Name: ${user?.full_name || 'N/A'}. Country: ${user?.country || 'N/A'}. Amount: $${manualAmount}.`
+    )
+    const whatsappTarget = manualSettings?.whatsapp_support || manualSettings?.whatsapp_link || ''
+    const initialWindow = window.open('', '_blank')
+
     setManualLoading(true)
     try {
       const res = await api.post('/api/payments/manual/submit', {
@@ -193,20 +199,32 @@ export default function AddFundsPage() {
         transaction_id: isLiberia ? manualTransactionId : manualTransactionId || undefined,
         proof_note: manualNote
       })
-      showToast(
-        res.data.message ||
+
+      const message = res.data.message ||
         (isLiberia
           ? '✅ Payment submitted! Admin will review within 4-10 minutes'
-          : '✅ Your request has been submitted. Admin will send payment instructions for your country.'),
-        'success'
-      )
+          : '✅ Your request has been submitted. Admin will send payment instructions for your country.')
+      showToast(message, 'success')
       setManualAmount(10)
       setManualPhone('')
       setManualTransactionId('')
       setManualNote('')
       setManualRequestSubmitted(true)
       loadMyManualPayments()
+
+      const whatsappUrl = whatsappTarget
+        ? `https://wa.me/${whatsappTarget.replace(/\D/g, '')}?text=${whatsappMessage}`
+        : `https://wa.me/?text=${whatsappMessage}`
+
+      if (initialWindow) {
+        initialWindow.location.href = whatsappUrl
+      } else {
+        window.open(whatsappUrl, '_blank')
+      }
     } catch (err: any) {
+      if (initialWindow) {
+        initialWindow.close()
+      }
       showToast(err?.response?.data?.detail || 'Failed to submit payment', 'error')
     } finally { setManualLoading(false) }
   }
@@ -400,7 +418,14 @@ export default function AddFundsPage() {
                       Your request has been submitted. Chat with admin on WhatsApp to complete payment, then admin will approve the request from their dashboard.
                     </div>
                     <div className="flex gap-2">
-                      <a href={`https://wa.me/${manualSettings.whatsapp?.replace(/[^\\d+]/g, '')}`} target="_blank" rel="noopener noreferrer"
+                      <a href={(() => {
+                        const target = manualSettings.whatsapp_support || manualSettings.whatsapp_link || ''
+                        const text = encodeURIComponent('I want to do a manual payment on BOASTLIB.')
+                        if (target) {
+                          return `https://wa.me/${String(target).replace(/\D/g, '')}?text=${text}`
+                        }
+                        return `https://wa.me/?text=${text}`
+                      })()} target="_blank" rel="noopener noreferrer"
                         className="flex-1 px-3 py-2 bg-green-500/20 text-green-400 rounded text-xs font-semibold text-center hover:bg-green-500/30">
                         💬 Chat on WhatsApp
                       </a>
