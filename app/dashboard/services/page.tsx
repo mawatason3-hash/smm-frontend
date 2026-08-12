@@ -1,51 +1,111 @@
 'use client'
-import { useEffect, useState } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
 import api from '@/lib/api'
-import Link from 'next/link'
+import PlatformGrid, { type PlatformKey } from '@/components/PlatformGrid'
+import CategoryNav from '@/components/CategoryNav'
+import ServiceCard from '@/components/ServiceCard'
+
+type Service = {
+  id: string | number
+  name: string
+  rate_per_1k?: number | null
+  cost_per_1k?: number | null
+  provider?: string | null
+  min_qty?: number | null
+  max_qty?: number | null
+  category?: string | null
+  refill?: boolean | null
+}
+
+function deriveCategoryFromName(name?: string) {
+  if (!name) return 'General'
+  const mapping: Array<[RegExp, string]> = [
+    [/followers?/i, 'Followers'],
+    [/likes?/i, 'Likes'],
+    [/views?/i, 'Views'],
+    [/comments?/i, 'Comments'],
+    [/saves?/i, 'Saves'],
+    [/impression/i, 'Impressions'],
+    [/members?/i, 'Members'],
+    [/plays?/i, 'Plays'],
+    [/engagement/i, 'Engagement'],
+    [/subscrib/i, 'Subscribers'],
+    [/message/i, 'Messages'],
+  ]
+  for (const [re, cat] of mapping) if (re.test(name)) return cat
+  return 'Other'
+}
 
 export default function DashboardServicesPage() {
-  const [services, setServices] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformKey | undefined>(undefined)
+  const [services, setServices] = useState<Service[]>([])
+  const [activeCategory, setActiveCategory] = useState<string>('All')
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get('/api/services?limit=200')
-        setServices(res.data || [])
-      } catch {} finally { setLoading(false) }
-    }
-    load()
-  }, [])
+    if (!selectedPlatform) return
+    let mounted = true
+    setIsLoading(true)
+    api.get(`/api/services?platform=${selectedPlatform}&limit=500`).then(res => {
+      if (!mounted) return
+      const data: Service[] = (res.data || []).map((s: any) => ({
+        ...s,
+        category: s.category || deriveCategoryFromName(s.name),
+      }))
+      setServices(data)
+    }).catch(() => setServices([])).finally(() => mounted && setIsLoading(false))
+    return () => { mounted = false }
+  }, [selectedPlatform])
+
+  const categories = useMemo(() => {
+    const set = new Set<string>()
+    services.forEach(s => set.add(s.category || deriveCategoryFromName(s.name)))
+    return ['All', ...Array.from(set).filter(Boolean)]
+  }, [services])
+
+  const filtered = useMemo(() => {
+    if (!selectedPlatform) return []
+    if (activeCategory === 'All') return services
+    return services.filter(s => (s.category || '').toLowerCase() === activeCategory.toLowerCase())
+  }, [services, activeCategory, selectedPlatform])
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-white">Services</h1>
-          <p className="text-[#9CA3AF] text-sm">{services.length} services</p>
-        </div>
+    <div className="max-w-7xl mx-auto space-y-6 py-6">
+      <div>
+        <h1 className="text-2xl font-black text-white">Services</h1>
+        <p className="text-sm text-slate-400 mt-1">Choose a platform to browse available boosts and service categories.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading ? (
-          <div className="text-[#6B7280]">Loading...</div>
-        ) : services.length === 0 ? (
-          <div className="text-[#6B7280]">No services available</div>
-        ) : services.map(s => (
-          <div key={s.id} className="card p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-white font-bold truncate">{s.name}</div>
-                <div className="text-[#9CA3AF] text-xs capitalize">{s.platform}</div>
-              </div>
-              <div className="text-green-400 font-bold">${s.rate_per_1k}</div>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Link href={`/dashboard/order?platform=${s.platform}`} className="btn-primary text-sm px-3 py-1.5">Order</Link>
-            </div>
+      <section>
+        <PlatformGrid selected={selectedPlatform} onSelect={(p) => { setSelectedPlatform(p); setActiveCategory('All') }} />
+      </section>
+
+      {selectedPlatform && (
+        <section>
+          <div className="mt-4">
+            <CategoryNav categories={categories} active={activeCategory} onSelect={(c) => setActiveCategory(c)} />
           </div>
-        ))}
-      </div>
+
+          <div className="mt-6">
+            {isLoading ? (
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-40 rounded-xl bg-slate-900/60 animate-pulse" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="rounded-xl border border-white/8 p-8 text-slate-400">No services found for this platform/category.</div>
+            ) : (
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+                {filtered.map(s => (
+                  <ServiceCard key={s.id} service={s} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
