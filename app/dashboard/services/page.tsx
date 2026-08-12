@@ -73,29 +73,44 @@ export default function DashboardServicesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 py-6">
       <div>
-        <h1 className="text-2xl font-black text-white">Services</h1>
-        <p className="text-sm text-slate-400 mt-1">Choose a platform to browse available boosts and service categories.</p>
+        <h1 className="text-3xl font-black text-white">Services</h1>
+        <p className="text-sm text-slate-400 mt-1">Choose a platform and category to browse the exact boost you want.</p>
       </div>
 
-      <section>
+      <section className="rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)]">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold text-white">1. Select Platform</h2>
+          <p className="text-sm text-slate-500 mt-2">Pick a platform to load services and surface relevant categories.</p>
+        </div>
         <PlatformGrid selected={selectedPlatform} onSelect={(p) => { setSelectedPlatform(p); setActiveCategory('All') }} />
+
+        {selectedPlatform && (
+          <div className="mt-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-semibold text-white">2. Filter by category</h3>
+                <p className="text-sm text-slate-500 mt-1">Tap a category to narrow the service list.</p>
+              </div>
+              <div className="text-sm text-slate-400">{filtered.length} services</div>
+            </div>
+            <div className="mt-4">
+              <CategoryNav categories={categories} active={activeCategory} onSelect={(c) => setActiveCategory(c)} />
+            </div>
+          </div>
+        )}
       </section>
 
       {selectedPlatform && (
         <section>
-          <div className="mt-4">
-            <CategoryNav categories={categories} active={activeCategory} onSelect={(c) => setActiveCategory(c)} />
-          </div>
-
-          <div className="mt-6">
+          <div className="mt-2">
             {isLoading ? (
               <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-40 rounded-xl bg-slate-900/60 animate-pulse" />
+                  <div key={i} className="h-44 rounded-3xl bg-slate-900/60 animate-pulse" />
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-xl border border-white/8 p-8 text-slate-400">No services found for this platform/category.</div>
+              <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-8 text-center text-slate-400">No services found for this platform/category.</div>
             ) : (
               <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                 {filtered.map(s => (

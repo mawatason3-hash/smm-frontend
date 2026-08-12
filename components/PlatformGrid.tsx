@@ -17,7 +17,7 @@ const PLATFORM_META: { key: PlatformKey, label: string, Icon: any }[] = [
   { key: 'discord', label: 'Discord', Icon: SiDiscord },
 ]
 
-export default function PlatformGrid({ selected, onSelect }: { selected?: string, onSelect: (p: PlatformKey) => void }) {
+export default function PlatformGrid({ selected, onSelect }: { selected?: PlatformKey, onSelect: (p: PlatformKey) => void }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
       {PLATFORM_META.map((p) => {
@@ -27,14 +27,16 @@ export default function PlatformGrid({ selected, onSelect }: { selected?: string
             key={p.key}
             onClick={() => onSelect(p.key)}
             className={cn(
-              'rounded-xl p-4 flex flex-col items-center justify-center gap-2 border transition-shadow duration-150 bg-[#0B0B16]',
-              active ? 'border-blue-400 shadow-[0_8px_30px_rgba(59,130,246,0.12)]' : 'border-white/6 hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)]'
+              'rounded-2xl p-4 flex flex-col items-center justify-center gap-3 border text-left transition-all duration-200 bg-slate-950/90 shadow-sm',
+              active
+                ? 'border-blue-400 bg-gradient-to-br from-blue-500/10 to-slate-950 shadow-[0_20px_60px_rgba(59,130,246,0.16)]'
+                : 'border-white/10 hover:border-blue-400/70 hover:bg-slate-900'
             )}
           >
-            <div className={cn('text-2xl')}>
-              {typeof p.Icon === 'function' ? <p.Icon /> : null}
+            <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl', active ? 'bg-blue-500/15 text-blue-300' : 'bg-white/5 text-slate-300')}>
+              <p.Icon className="text-xl" />
             </div>
-            <div className="text-sm text-slate-300">{p.label}</div>
+            <div className="text-sm font-semibold text-slate-200">{p.label}</div>
           </button>
         )
       })}

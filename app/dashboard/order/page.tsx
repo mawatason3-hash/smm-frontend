@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useMemo, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import api from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,6 +7,26 @@ import { useToast } from '@/contexts/ToastContext'
 import { PLATFORMS, Service } from '@/types'
 import { formatCurrency, calculateCharge, debounce } from '@/lib/utils'
 import PlatformIcon from '@/lib/platformIcons'
+import CategoryNav from '@/components/CategoryNav'
+
+function deriveCategoryFromName(name?: string) {
+  if (!name) return 'General'
+  const mapping: Array<[RegExp, string]> = [
+    [/followers?/i, 'Followers'],
+    [/likes?/i, 'Likes'],
+    [/views?/i, 'Views'],
+    [/comments?/i, 'Comments'],
+    [/saves?/i, 'Saves'],
+    [/impression/i, 'Impressions'],
+    [/members?/i, 'Members'],
+    [/plays?/i, 'Plays'],
+    [/engagement/i, 'Engagement'],
+    [/subscrib/i, 'Subscribers'],
+    [/message/i, 'Messages'],
+  ]
+  for (const [re, cat] of mapping) if (re.test(name)) return cat
+  return 'Other'
+}
 
 function OrderPageContent() {
   const searchParams = useSearchParams()
@@ -19,6 +39,7 @@ function OrderPageContent() {
   const [serviceCache, setServiceCache] = useState<Record<string, Service[]>>({})
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [serviceSearch, setServiceSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
   const [link, setLink] = useState('')
   const [quantity, setQuantity] = useState(100)
   const [placing, setPlacing] = useState(false)
@@ -100,6 +121,8 @@ function OrderPageContent() {
       return
     }
 
+    setSelectedCategory('All')
+
     if (!serviceSearch.trim()) {
       loadAllPlatformServices(selectedPlatform)
       return
@@ -107,6 +130,17 @@ function OrderPageContent() {
 
     searchServices(selectedPlatform, serviceSearch)
   }, [selectedPlatform, serviceSearch, loadAllPlatformServices, searchServices])
+
+  const categories = useMemo(() => {
+    const set = new Set<string>()
+    services.forEach((svc) => set.add(svc.category || deriveCategoryFromName(svc.name)))
+    return ['All', ...Array.from(set).filter(Boolean)]
+  }, [services])
+
+  const filteredServices = useMemo(() => {
+    if (selectedCategory === 'All') return services
+    return services.filter((svc) => (svc.category || deriveCategoryFromName(svc.name)).toLowerCase() === selectedCategory.toLowerCase())
+  }, [services, selectedCategory])
 
   const charge = selectedService ? calculateCharge(selectedService.rate_per_1k, quantity) : 0
   const canAfford = Number(user?.balance || 0) >= charge
@@ -180,8 +214,11 @@ function OrderPageContent() {
           {selectedPlatform && (
             <div className="card">
               <h2 className="text-white font-bold mb-4">2. Select Service</h2>
-              <input type="text" value={serviceSearch} onChange={e => setServiceSearch(e.target.value)}
-                className="input mb-3" placeholder="Search services..." />
+              <div className="space-y-4">
+                <CategoryNav categories={categories} active={selectedCategory} onSelect={(category) => setSelectedCategory(category)} />
+                <input type="text" value={serviceSearch} onChange={e => setServiceSearch(e.target.value)}
+                  className="input mb-3" placeholder="Search services..." />
+              </div>
 
               {serviceLoading && (
                 <div className="text-sm text-[#9CA3AF] mb-3">Loading services...</div>
@@ -192,9 +229,9 @@ function OrderPageContent() {
               )}
 
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {services.length === 0 && !serviceLoading && !serviceError ? (
+                {filteredServices.length === 0 && !serviceLoading && !serviceError ? (
                   <div className="text-[#6B7280] text-sm text-center py-6">No services found</div>
-                ) : services.map(svc => (
+                ) : filteredServices.map((svc: Service) => (
                   <div key={svc.id} onClick={() => { setSelectedService(svc); setQuantity(svc.min_qty) }}
                     className={`p-3 rounded-xl border cursor-pointer transition-all
                       ${selectedService?.id === svc.id

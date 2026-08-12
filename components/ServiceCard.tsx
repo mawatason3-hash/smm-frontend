@@ -25,25 +25,27 @@ export default function ServiceCard({ service }: { service: Service }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.28 }}
-      className="group overflow-hidden rounded-xl border border-white/8 bg-slate-950/80 p-4 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(2,6,23,0.6)] transition"
+      className="group overflow-hidden rounded-3xl border border-white/10 bg-[#0B0B16] p-5 shadow-[0_30px_50px_rgba(0,0,0,0.35)] transition hover:-translate-y-1 hover:border-blue-400/40"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-lg font-bold text-white line-clamp-2">{service.name}</h3>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-sm text-slate-400">{service.provider ?? 'JAP'}</span>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${service.refill ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>{service.refill ? 'Refill: Yes' : 'Refill: No'}</span>
+          <h3 className="text-lg font-semibold text-white line-clamp-2">{service.name}</h3>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{service.provider ?? 'JAP'}</span>
+            <span className={`rounded-full px-2.5 py-1 font-semibold ${service.refill ? 'bg-emerald-600/15 text-emerald-300 border border-emerald-500/20' : 'bg-rose-600/15 text-rose-300 border border-rose-500/20'}`}>{service.refill ? 'Refill Yes' : 'Refill No'}</span>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-slate-400">Price</div>
-          <div className="text-lg font-bold text-white">{formatCurrency(price)}/1K</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Price</div>
+          <div className="mt-2 text-2xl font-bold text-white">{formatCurrency(price)}/1K</div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-slate-400 px-2 py-0.5 rounded-full bg-white/2">{service.category ?? 'General'}</span>
-        <Link href={`/dashboard/order?service=${service.id}`} className="btn-primary px-3 py-1 text-sm">Order</Link>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <span className="rounded-full bg-slate-900/80 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300">{service.category ?? 'General'}</span>
+        <Link href={`/dashboard/order?service=${service.id}`} className="inline-flex rounded-full bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400">
+          Order
+        </Link>
       </div>
     </motion.div>
   )

@@ -29,6 +29,7 @@ export interface Service {
   quality_badge?: string
   refill_enabled: boolean
   cancel_enabled: boolean
+  category?: string
 }
 
 export interface Order {
