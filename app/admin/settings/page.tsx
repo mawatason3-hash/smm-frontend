@@ -54,7 +54,8 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="block text-sm text-[#9CA3AF] mb-1.5">Default Provider</label>
-              <select value={settings.default_provider || 'wizsmm'} onChange={e => update('default_provider', e.target.value)} className="input" style={{ appearance: 'none' }}>
+              <select value={settings.default_provider || 'morethanpanel'} onChange={e => update('default_provider', e.target.value)} className="input" style={{ appearance: 'none' }}>
+                <option value="morethanpanel">MorethanPanel</option>
                 <option value="wizsmm">WIZSMM</option>
               </select>
             </div>

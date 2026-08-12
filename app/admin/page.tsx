@@ -22,9 +22,10 @@ export default function AdminDashboardPage() {
 
   const loadDashboard = async () => {
     try {
-      const [dashRes, wizsmmRes, healthRes] = await Promise.all([
+      const [dashRes, wizsmmRes, morethanRes, healthRes] = await Promise.all([
         api.get('/api/admin/dashboard'),
         api.get('/api/admin/provider-balance/wizsmm').catch(() => ({ data: null })),
+        api.get('/api/admin/provider-balance/morethanpanel').catch(() => ({ data: null })),
         api.get('/api/admin/health-detail').catch(() => ({ data: null })),
       ])
 
@@ -40,6 +41,7 @@ export default function AdminDashboardPage() {
 
       setProviders({
         wizsmm: wizsmmRes.data ?? null,
+        morethanpanel: morethanRes.data ?? null,
       })
 
       setHealthStatus(healthRes.data ?? null)
@@ -241,7 +243,7 @@ export default function AdminDashboardPage() {
             className="card group hover:border-cyan-400/50 hover:scale-[1.02] transition-all">
             <div className="text-4xl mb-3">🛠️</div>
             <h3 className="text-white font-bold mb-1">Services</h3>
-            <p className="text-gray-400 text-xs mb-3">Sync from WIZSMM only</p>
+            <p className="text-gray-400 text-xs mb-3">Sync from provider panels</p>
             <div className="text-cyan-400 text-lg font-black">Live</div>
           </Link>
 
@@ -281,32 +283,39 @@ export default function AdminDashboardPage() {
       {/* SECTION 4: SMM PROVIDER STATUS */}
       <div>
         <h2 className="text-white font-bold mb-4">🔌 Provider Connection Status</h2>
-        <div className="grid md:grid-cols-1 gap-4">
-          <div className="card">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="text-white font-bold text-lg">WIZSMM</div>
-                <div className="text-gray-400 text-xs">Wizsmm Panel</div>
-              </div>
-              <span className={`h-3 w-3 rounded-full ${
-                providers.wizsmm?.balance ? 'bg-green-400' : 'bg-red-500'
-              }`} />
-            </div>
-            {providers.wizsmm?.balance ? (
-              <div>
-                <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
-                <div className="text-white text-lg font-bold mb-1">
-                  ${typeof providers.wizsmm.balance === 'object' ? providers.wizsmm.balance.balance : providers.wizsmm.balance}
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            { key: 'morethanpanel', label: 'MorethanPanel', subtitle: 'MorethanPanel API' },
+            { key: 'wizsmm', label: 'WIZSMM', subtitle: 'Wizsmm Panel' }
+          ].map(provider => {
+            const data = providers[provider.key]
+            const balance = data?.balance
+            return (
+              <div key={provider.key} className="card">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="text-white font-bold text-lg">{provider.label}</div>
+                    <div className="text-gray-400 text-xs">{provider.subtitle}</div>
+                  </div>
+                  <span className={`h-3 w-3 rounded-full ${balance ? 'bg-green-400' : 'bg-red-500'}`} />
                 </div>
-                <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
+                {balance ? (
+                  <div>
+                    <div className="text-green-400 font-semibold mb-2">🟢 Connected</div>
+                    <div className="text-white text-lg font-bold mb-1">
+                      ${typeof balance === 'object' ? balance.balance : balance}
+                    </div>
+                    <div className="text-gray-400 text-xs">Ready to fulfill orders</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-red-400 font-semibold mb-2">🔴 Not Configured</div>
+                    <div className="text-gray-400 text-xs mb-3">Add {provider.label.toUpperCase()} API vars to env</div>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div>
-                <div className="text-red-400 font-semibold mb-2">🔴 Not Configured</div>
-                <div className="text-gray-400 text-xs mb-3">Add WIZSMM_API_KEY to Railway env vars</div>
-              </div>
-            )}
-          </div>
+            )
+          })}
         </div>
       </div>
 
