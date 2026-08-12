@@ -64,6 +64,27 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Link href="/dashboard/giveaway" className="card bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:scale-[1.02] transition-transform">
+          <div className="flex flex-col gap-3 p-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🎁</span>
+              <div>
+                <div className="text-sm uppercase tracking-[0.2em] opacity-80">Giveaway</div>
+                <div className="text-2xl font-black">Earn free balance</div>
+              </div>
+            </div>
+            <p className="text-white/80 text-sm max-w-xl">
+              Participate in our giveaway rewards and earn credit by completing verified social actions like LinkedIn posts, YouTube videos, and forum shares.
+            </p>
+            <div className="inline-flex items-center justify-between rounded-2xl bg-white/10 p-3 text-sm font-semibold">
+              <span>View giveaway options</span>
+              <span className="text-xl">→</span>
+            </div>
+          </div>
+        </Link>
+      </div>
+
       {/* Quick Order Widget */}
       <div className="card">
         <div className="flex items-center gap-3 mb-4">

@@ -11,6 +11,7 @@ const USER_NAV = [
   { href: '/dashboard/order', label: 'New Order', icon: '➕' },
   { href: '/dashboard/orders', label: 'My Orders', icon: '📦' },
   { href: '/dashboard/funds', label: 'Add Funds', icon: '💳' },
+  { href: '/dashboard/giveaway', label: 'Giveaway', icon: '🎁' },
   { href: '/dashboard/transactions', label: 'Transactions', icon: '📊' },
   { href: '/dashboard/services', label: 'Services', icon: '⚙️' },
   { href: '/dashboard/referrals', label: 'Referrals', icon: '🎁' },

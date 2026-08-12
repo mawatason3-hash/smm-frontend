@@ -3,33 +3,25 @@ export const metadata = {
   description: 'Buy YouTube views for your videos with BOASTLIB. Affordable, fast, and reliable delivery for YouTube growth.',
 }
 
-import PlatformIcon from '@/lib/platformIcons'
+import PlatformCategoryFilter from '@/components/PlatformCategoryFilter'
 
 export default function YouTubeViewsPage() {
   return (
-    <div className="max-w-5xl mx-auto space-y-10 py-16 px-4">
-      <div className="space-y-4 text-center">
-        <p className="text-sm text-green-400 uppercase tracking-[0.3em]"><span className="inline-flex items-center gap-2"><PlatformIcon platform="youtube" size={18} />YouTube</span></p>
-        <h1 className="text-4xl sm:text-5xl font-black text-white">Buy YouTube Views</h1>
-        <p className="max-w-3xl mx-auto text-[#9CA3AF] text-base sm:text-lg">
-          Increase your YouTube video reach with cheap views, reliable delivery, and automatic progress tracking from BOASTLIB.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="card border border-[#2D2D50] p-6">
-          <h2 className="text-xl font-bold text-white mb-3">Reliable Delivery</h2>
-          <p className="text-[#9CA3AF] leading-relaxed">Get real video views delivered directly to your YouTube content on time.</p>
-        </div>
-        <div className="card border border-[#2D2D50] p-6">
-          <h2 className="text-xl font-bold text-white mb-3">Cheap Rates</h2>
-          <p className="text-[#9CA3AF] leading-relaxed">Order YouTube views from a low-cost panel without sacrificing service quality.</p>
-        </div>
-      </div>
-
-      <div className="text-center">
-        <a href="/auth/register" className="btn-primary px-8 py-3.5 text-base">Order YouTube Views</a>
-      </div>
+    <div className="max-w-6xl mx-auto py-16 px-4">
+      <PlatformCategoryFilter
+        platform="youtube"
+        title="Buy YouTube Views, Subscribers & More"
+        description="Select a YouTube category to instantly see the best service options. Views, subscribers, likes, and comments are now shown in one clear list."
+        ctaLabel="Start YouTube Order"
+        ctaHref="/auth/register"
+        categories={['All', 'Views', 'Subscribers', 'Likes', 'Comments']}
+        services={[
+          { name: 'YouTube Views', category: 'Views', desc: 'High-quality YouTube views for videos and channels.' },
+          { name: 'YouTube Subscribers', category: 'Subscribers', desc: 'Build your YouTube channel audience with affordable subscribers.' },
+          { name: 'YouTube Likes', category: 'Likes', desc: 'Get more likes on YouTube videos to improve ranking and credibility.' },
+          { name: 'YouTube Comments', category: 'Comments', desc: 'Add targeted comments to your videos for better engagement.' },
+        ]}
+      />
     </div>
   )
 }
