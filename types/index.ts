@@ -48,7 +48,7 @@ export interface Order {
   updated_at: string
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'in_progress' | 'completed' | 'partial' | 'cancelled' | 'error'
+export type OrderStatus = 'pending' | 'processing' | 'in_progress' | 'completed' | 'partial' | 'cancelled' | 'refunded' | 'error'
 
 export interface Transaction {
   id: string
@@ -104,11 +104,12 @@ export const PLATFORMS = [
 ]
 
 export const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400' },
+  pending: { label: 'Pending', color: 'bg-amber-500/20 text-amber-300' },
   processing: { label: 'Processing', color: 'bg-blue-500/20 text-blue-400' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400' },
-  completed: { label: 'Completed', color: 'bg-green-500/20 text-green-400' },
-  partial: { label: 'Partial', color: 'bg-orange-500/20 text-orange-400' },
+  in_progress: { label: 'Processing', color: 'bg-blue-500/20 text-blue-400' },
+  completed: { label: 'Completed', color: 'bg-emerald-400/20 text-[#00FF88]' },
+  partial: { label: 'Partial', color: 'bg-violet-500/20 text-violet-300' },
   cancelled: { label: 'Cancelled', color: 'bg-red-500/20 text-red-400' },
+  refunded: { label: 'Refunded', color: 'bg-slate-500/20 text-slate-400' },
   error: { label: 'Error', color: 'bg-red-500/20 text-red-400' },
 }

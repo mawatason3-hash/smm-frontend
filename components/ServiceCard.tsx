@@ -13,7 +13,10 @@ type Service = {
   min_qty?: number | null
   max_qty?: number | null
   category?: string | null
-  refill?: boolean | null
+  refill_enabled?: boolean | null
+  is_instant?: boolean | null
+  is_recommended?: boolean | null
+  quality_badge?: string | null
 }
 
 export default function ServiceCard({ service }: { service: Service }) {
@@ -32,7 +35,9 @@ export default function ServiceCard({ service }: { service: Service }) {
           <h3 className="text-lg font-semibold text-white line-clamp-2">{service.name}</h3>
           <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
             <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{service.provider ?? 'JAP'}</span>
-            <span className={`rounded-full px-2.5 py-1 font-semibold ${service.refill ? 'bg-emerald-600/15 text-emerald-300 border border-emerald-500/20' : 'bg-rose-600/15 text-rose-300 border border-rose-500/20'}`}>{service.refill ? 'Refill Yes' : 'Refill No'}</span>
+            {service.is_instant && <span className="rounded-full bg-amber-500/10 text-amber-200 border border-amber-400/20 px-2.5 py-1 font-semibold">⚡ Instant</span>}
+            {service.is_recommended && <span className="rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-400/20 px-2.5 py-1 font-semibold">⭐ Best Choice</span>}
+            <span className={`rounded-full px-2.5 py-1 font-semibold ${service.refill_enabled ? 'bg-emerald-600/15 text-emerald-300 border border-emerald-500/20' : 'bg-rose-600/15 text-rose-300 border border-rose-500/20'}`}>{service.refill_enabled ? 'Refill Yes' : 'Refill No'}</span>
           </div>
         </div>
         <div className="text-right">

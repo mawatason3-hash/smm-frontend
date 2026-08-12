@@ -15,7 +15,11 @@ type Service = {
   min_qty?: number | null
   max_qty?: number | null
   category?: string | null
-  refill?: boolean | null
+  refill_enabled?: boolean | null
+  cancel_enabled?: boolean | null
+  is_instant?: boolean | null
+  is_recommended?: boolean | null
+  quality_badge?: string | null
 }
 
 function deriveCategoryFromName(name?: string) {
