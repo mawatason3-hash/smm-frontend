@@ -10,6 +10,7 @@ const USER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/dashboard/order', label: 'New Order', icon: '➕' },
   { href: '/dashboard/orders', label: 'My Orders', icon: '📦' },
+  { href: '/dashboard/tickets', label: 'Tickets', icon: '🎫' },
   { href: '/dashboard/funds', label: 'Add Funds', icon: '💳' },
   { href: '/dashboard/giveaway', label: 'Giveaway', icon: '🎁' },
   { href: '/dashboard/transactions', label: 'Transactions', icon: '📊' },

@@ -64,6 +64,20 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <Link href="/dashboard/tickets" className="card border border-[#3B82F6]/40 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1E293B] block no-underline hover:scale-[1.01] transition-transform">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="text-3xl">🎫</div>
+            <div>
+              <div className="text-xs uppercase tracking-[0.25em] text-[#93C5FD] font-semibold">Support</div>
+              <h2 className="text-white text-xl font-black mt-1">Need help or want to report an issue?</h2>
+              <p className="text-[#9CA3AF] text-sm mt-1">Submit a complaint or ticket and we’ll review it with your latest order details.</p>
+            </div>
+          </div>
+          <span className="btn-primary px-5 py-3 text-sm whitespace-nowrap">Submit Ticket →</span>
+        </div>
+      </Link>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Link href="/dashboard/giveaway" className="card bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:scale-[1.02] transition-transform">
           <div className="flex flex-col gap-3 p-6">
