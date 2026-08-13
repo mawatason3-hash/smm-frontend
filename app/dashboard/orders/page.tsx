@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import api from '@/lib/api'
 import { formatCurrency, formatDateTime, formatRelativeTime, truncateLink } from '@/lib/utils'
 import PlatformIcon from '@/lib/platformIcons'
@@ -35,15 +35,15 @@ export default function OrdersPage() {
   const [isPolling, setIsPolling] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const REFRESHABLE_STATUSES = new Set(['pending', 'processing', 'in_progress', 'partial'])
-  const REPORTABLE_STATUSES = new Set(['pending', 'processing', 'in_progress', 'partial', 'error'])
+  const REFRESHABLE_STATUSES = useMemo(() => new Set(['pending', 'processing', 'in_progress', 'partial']), [])
+  const REPORTABLE_STATUSES = useMemo(() => new Set(['pending', 'processing', 'in_progress', 'partial', 'error']), [])
 
   const STATUS_COUNTS: Record<string, string> = {
     completed: 'text-[#00FF88]', processing: 'text-blue-400',
     pending: 'text-amber-300', cancelled: 'text-red-400', partial: 'text-violet-300', refunded: 'text-slate-400'
   }
 
-  const loadOrders = async (options: { force?: boolean } = {}) => {
+  const loadOrders = useCallback(async (options: { force?: boolean } = {}) => {
     if (!options.force) {
       setLoading(true)
     } else {
@@ -55,45 +55,62 @@ export default function OrdersPage() {
       if (statusFilter) params.set('status', statusFilter)
       if (platformFilter) params.set('platform', platformFilter)
       const res = await api.get(`/api/orders?${params}`)
-      setOrders(res.data.items)
-      setTotal(res.data.total)
+      setOrders(Array.isArray(res.data?.items) ? res.data.items : [])
+      setTotal(Number(res.data?.total || 0))
     } catch (err: any) {
       console.error('Failed to load orders', err)
+      setOrders([])
+      setTotal(0)
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [page, statusFilter, platformFilter])
 
   useEffect(() => {
-    loadOrders()
-  }, [page, statusFilter, platformFilter, loadOrders])
+    void loadOrders()
+  }, [loadOrders])
 
   useEffect(() => {
+    if (!orders.length) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
+    const hasPendingOrders = orders.some(order => REFRESHABLE_STATUSES.has(order.status))
+    if (!hasPendingOrders) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
 
     intervalRef.current = setInterval(() => {
-      const hasPendingOrders = orders.some(order => REFRESHABLE_STATUSES.has(order.status))
-      if (hasPendingOrders) {
-        ;(async () => {
-          try {
-            setIsPolling(true)
-            await loadOrders({ force: true })
-          } finally {
-            setIsPolling(false)
-          }
-        })()
-      }
+      ;(async () => {
+        try {
+          setIsPolling(true)
+          await loadOrders({ force: true })
+        } finally {
+          setIsPolling(false)
+        }
+      })()
     }, 30000)
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
+        intervalRef.current = null
       }
     }
-  }, [orders, loadOrders])
+  }, [orders, loadOrders, REFRESHABLE_STATUSES])
 
   const statusCounts = orders.reduce((acc, o) => {
     acc[o.status] = (acc[o.status] || 0) + 1

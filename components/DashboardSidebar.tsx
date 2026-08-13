@@ -14,7 +14,7 @@ const USER_NAV = [
   { href: '/dashboard/funds', label: 'Add Funds', icon: '💳' },
   { href: '/dashboard/giveaway', label: 'Giveaway', icon: '🎁' },
   { href: '/dashboard/transactions', label: 'Transactions', icon: '📊' },
-  { href: '/dashboard/services', label: 'Services', icon: '⚙️' },
+  { href: '/dashboard/order', label: 'Services', icon: '⚙️' },
   { href: '/dashboard/referrals', label: 'Referrals', icon: '🎁' },
   { href: '/dashboard/profile', label: 'Profile', icon: '👤' },
 ]
@@ -34,7 +34,7 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
 
     const NavLink = ({ href, label, icon, className = '' }: { href: string; label: string; icon: string; className?: string }) => {
-    const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+    const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`))
     return (
       <Link href={href} onClick={onClose}
         className={`sidebar-link ${active ? 'active' : ''} ${className}`}>
