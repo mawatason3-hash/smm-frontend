@@ -8,22 +8,22 @@ import { useToast } from '@/contexts/ToastContext'
 
 const GIVEAWAYS = [
   {
-    id: 'linkedin-post',
-    title: 'LinkedIn Post Giveaway',
+    id: 'instagram-post-promo',
+    title: 'Instagram Post Promo',
     reward: '$1 Balance',
-    description: 'Publish an original LinkedIn post with at least 250 words and keep it public for 1 year.',
+    description: 'Create a public Instagram promo post about BOASTLIB and submit the proof link for review.',
   },
   {
-    id: 'youtube-video',
-    title: 'YouTube Video Reward',
-    reward: 'Up to $5 Balance',
-    description: 'Create a genuine YouTube video and submit proof to earn reward credit.',
+    id: 'facebook-post-share',
+    title: 'Facebook Post & Share',
+    reward: 'Up to $3 Balance',
+    description: 'Share a public Facebook post that promotes BOASTLIB and send the public link for verification.',
   },
   {
-    id: 'forum-post',
-    title: 'Forum Post Bonus',
-    reward: '$1 Balance',
-    description: 'Post on a qualifying forum and submit proof to earn a reward.',
+    id: 'whatsapp-status-forward',
+    title: 'WhatsApp Status Post & Forward',
+    reward: 'Up to $2 Balance',
+    description: 'Post a BOASTLIB status and forward it publicly so our team can verify it.',
   },
 ]
 

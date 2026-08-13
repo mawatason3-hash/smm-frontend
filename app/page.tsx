@@ -1,4 +1,5 @@
 "use client"
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -66,7 +67,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#2D2D50]/60 backdrop-blur-md" style={{ background: 'rgba(11,11,26,0.9)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
+            <Image src="/logo.png" alt="BOASTLIB" width={40} height={40} className="w-10 h-10 object-contain" />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">

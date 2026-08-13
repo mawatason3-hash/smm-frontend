@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -64,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="p-5 border-b border-[#2D2D50]">
           <Link href="/" className="inline-flex items-center mb-3">
-            <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
+            <Image src="/logo.png" alt="BOASTLIB" width={40} height={40} className="w-10 h-10 object-contain" />
           </Link>
           <div className="flex items-center gap-2">
             <div className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white' }}>

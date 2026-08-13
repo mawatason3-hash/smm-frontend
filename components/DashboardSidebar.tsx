@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -60,7 +61,7 @@ export default function DashboardSidebar({ open, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="p-5 border-b border-[#2D2D50]">
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="BOASTLIB" className="w-10 h-10 object-contain" />
+            <Image src="/logo.png" alt="BOASTLIB" width={40} height={40} className="w-10 h-10 object-contain" />
           </Link>
         </div>
 

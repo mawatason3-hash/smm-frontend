@@ -124,6 +124,21 @@ export default function DashboardTicketsPage() {
         <p className="text-[#9CA3AF] text-sm mt-1">Send a complaint or problem to the admin team.</p>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="card p-5">
+          <div className="text-xs uppercase tracking-[0.3em] text-[#9CA3AF] font-semibold">Open</div>
+          <div className="text-3xl font-black text-white mt-3">{tickets.filter((ticket) => ticket.status === 'open').length}</div>
+        </div>
+        <div className="card p-5">
+          <div className="text-xs uppercase tracking-[0.3em] text-[#9CA3AF] font-semibold">In Review</div>
+          <div className="text-3xl font-black text-white mt-3">{tickets.filter((ticket) => ticket.status === 'in_review').length}</div>
+        </div>
+        <div className="card p-5">
+          <div className="text-xs uppercase tracking-[0.3em] text-[#9CA3AF] font-semibold">Total</div>
+          <div className="text-3xl font-black text-white mt-3">{total}</div>
+        </div>
+      </div>
+
       <div className="card">
         <div className="grid gap-4 md:grid-cols-2">
           <div>

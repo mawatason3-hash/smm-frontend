@@ -6,39 +6,39 @@ import { formatCurrency } from '@/lib/utils'
 
 const GIVEAWAYS = [
   {
-    title: 'LinkedIn Post Giveaway',
+    title: 'Instagram Post Promo',
     reward: '$1 Balance',
-    description: 'Publish an original LinkedIn post with at least 250 words and keep it public for 1 year.',
+    description: 'Create a public Instagram post promoting BOASTLIB and share the post link for verification.',
     requirements: [
-      'One post per user',
-      'Must remain public and visible for at least 1 year',
-      'No fake engagement, bots, or low-effort posts',
+      'Post must be public and visible to everyone',
+      'Mention the BOASTLIB brand clearly in the caption',
+      'Original promo content only',
     ],
-    actionText: 'Submit Your Proof',
+    actionText: 'Submit Proof',
     href: '/dashboard/giveaway/submit',
   },
   {
-    title: 'YouTube Video Reward',
-    reward: 'Up to $5 Balance',
-    description: 'Create a genuine YouTube video and submit proof to earn reward credit.',
+    title: 'Facebook Post & Share',
+    reward: 'Up to $3 Balance',
+    description: 'Publish a Facebook promo post and share it publicly so the campaign can be checked.',
     requirements: [
-      'Original content only',
-      'No copied or AI-generated spam',
-      'Must stay public for review',
+      'Must be a public Facebook post',
+      'Share or repost with visible public access',
+      'No fake engagement or hidden post visibility',
     ],
-    actionText: 'Learn more details',
+    actionText: 'Submit Proof',
     href: '/dashboard/giveaway/submit',
   },
   {
-    title: 'Forum Post Bonus',
-    reward: '$1 Balance',
-    description: 'Post on a qualifying forum and submit proof to earn a reward.',
+    title: 'WhatsApp Status Post & Forward',
+    reward: 'Up to $2 Balance',
+    description: 'Upload a BOASTLIB promo status and forward it to others to help us verify the campaign.',
     requirements: [
-      'One post per user',
-      'Minimum 250 words required',
-      'Must be professional and original',
+      'Status must clearly promote BOASTLIB',
+      'Forward or share into public chats where it remains visible',
+      'Upload the public proof link for review',
     ],
-    actionText: 'Learn more details',
+    actionText: 'Submit Proof',
     href: '/dashboard/giveaway/submit',
   },
 ]
@@ -66,7 +66,7 @@ export default function DashboardGiveawayPage() {
             <div className="text-sm uppercase tracking-[0.3em] text-emerald-400 font-semibold">Giveaway</div>
             <h1 className="text-3xl font-black text-white mt-2">Earn free platform credit</h1>
             <p className="text-[#9CA3AF] mt-3 max-w-2xl">
-              Complete verified social actions like LinkedIn posts, YouTube videos, or forum threads and get reward credits added directly to your BOASTLIB balance.
+              Promote BOASTLIB through verified social actions like Instagram posts, Facebook promotions, and WhatsApp status sharing to earn reward credits on your balance.
             </p>
           </div>
           <div className="rounded-3xl bg-[#0F172A] border border-[#2D2D50] px-5 py-4 text-white">
