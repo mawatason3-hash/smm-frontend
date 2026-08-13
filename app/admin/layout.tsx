@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { href: '/admin/power', label: 'ADMIN Power', icon: '⚡', gold: true },
   { href: '/admin/users', label: 'Users', icon: '👥' },
   { href: '/admin/orders', label: 'Orders', icon: '📦' },
+  { href: '/admin/tickets', label: 'Tickets', icon: '🎫' },
   { href: '/admin/services', label: 'Services', icon: '🛠️' },
   { href: '/admin/transactions', label: 'Transactions', icon: '💰' },
   { href: '/admin/manual-payments', label: 'Manual Payments 🇱🇷', icon: '📱' },
