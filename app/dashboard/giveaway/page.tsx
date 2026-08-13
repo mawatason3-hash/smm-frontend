@@ -50,7 +50,7 @@ export default function DashboardGiveawayPage() {
   useEffect(() => {
     const loadBalance = async () => {
       try {
-        const userRes = await api.get('/api/users/me')
+        const userRes = await api.get('/api/auth/me')
         setBalance(userRes.data.balance)
       } catch {}
       finally { setLoading(false) }
